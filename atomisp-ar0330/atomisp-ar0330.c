@@ -1071,22 +1071,12 @@ static int ar0330_probe(struct i2c_client *client,
 	if (ret < 0)
 		goto err_power_off;
 
-	snprintf(sd->name, sizeof(sd->name), "%s %s",
-		 AR0330_NAME, dev_name(sd->dev));
-	ret = v4l2_async_register_subdev_sensor_common(sd);
-	if (ret) {
-		dev_err(dev, "v4l2 async register subdev failed\n");
-		goto err_clean_entity;
-	}
-
 	pm_runtime_set_active(dev);
 	pm_runtime_enable(dev);
 	pm_runtime_idle(dev);
 
 	return 0;
 
-err_clean_entity:
-	media_entity_cleanup(&sd->entity);
 err_power_off:
 	__ar0330_power_off(ar0330);
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
