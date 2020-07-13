@@ -813,6 +813,12 @@ static int power_down(struct v4l2_subdev *sd)
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
 	int ret;
 
+	if (!dev->platform_data) {
+		dev_err(&client->dev,
+			"no camera_sensor_platform_data");
+		return -ENODEV;
+	}
+
 	ret = dev->platform_data->flisclk_ctrl(sd, 0);
 	if (ret)
 		dev_err(&client->dev, "flisclk failed\n");
