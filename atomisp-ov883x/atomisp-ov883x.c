@@ -1261,15 +1261,6 @@ static int ov8830_s_config(struct v4l2_subdev *sd,
 
 	mutex_lock(&dev->input_lock);
 
-	if (dev->platform_data->platform_init) {
-		ret = dev->platform_data->platform_init(client);
-		if (ret) {
-			mutex_unlock(&dev->input_lock);
-			v4l2_err(client, "ov8830 platform init err\n");
-			return ret;
-		}
-	}
-
 	ret = __ov8830_s_power(sd, 1);
 	if (ret) {
 		mutex_unlock(&dev->input_lock);
