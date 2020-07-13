@@ -394,6 +394,27 @@ static int power_ctrl(struct v4l2_subdev *sd, bool flag)
 	return ret;
 }
 
+static int gpio_ctrl(struct v4l2_subdev *sd, bool flag)
+{
+	int ret;
+	struct ov8830_device *dev = to_ov8830_sensor(sd);
+
+	if (!dev || !dev->platform_data)
+		return -ENODEV;
+
+	if (flag) {
+		ret = dev->platform_data->gpio0_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+		/* Ignore return from second gpio, it may not be there */
+		dev->platform_data->gpio1_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+	} else {
+		dev->platform_data->gpio1_ctrl(sd, 0);
+		ret = dev->platform_data->gpio0_ctrl(sd, 0);
+	}
+	return ret;
+}
+
 static int drv201_power_up(struct v4l2_subdev *sd)
 {
 	/* Transition time required from shutdown to standby state */
@@ -781,7 +802,7 @@ static int power_up(struct v4l2_subdev *sd)
 		goto fail_power;
 
 	/* Release reset */
-	ret = dev->platform_data->gpio_ctrl(sd, 1);
+	ret = gpio_ctrl(sd, 1);
 	if (ret)
 		dev_err(&client->dev, "gpio failed 1\n");
 
@@ -815,7 +836,7 @@ static int power_down(struct v4l2_subdev *sd)
 		dev_err(&client->dev, "flisclk failed\n");
 
 	/* gpio ctrl */
-	ret = dev->platform_data->gpio_ctrl(sd, 0);
+	ret = gpio_ctrl(sd, 0);
 	if (ret)
 		dev_err(&client->dev, "gpio failed 1\n");
 
