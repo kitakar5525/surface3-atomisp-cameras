@@ -1268,11 +1268,10 @@ static int ov8830_s_config(struct v4l2_subdev *sd,
 		goto fail_power_off;
 	}
 
-	ret = __ov8830_s_power(sd, 1);
+	ret = power_up(sd);
 	if (ret) {
-		mutex_unlock(&dev->input_lock);
 		v4l2_err(client, "ov8830 power-up err.\n");
-		return ret;
+		goto fail_power_on;
 	}
 
 	ret = dev->platform_data->csi_cfg(sd, 1);
@@ -1283,26 +1282,26 @@ static int ov8830_s_config(struct v4l2_subdev *sd,
 	ret = ov8830_detect(client, &sensor_id, &sensor_revision);
 	if (ret) {
 		v4l2_err(client, "ov8830_detect err s_config.\n");
-		goto fail_detect;
+		goto fail_csi_cfg;
 	}
 
 	dev->sensor_id = sensor_id;
 	dev->sensor_revision = sensor_revision;
 
 	/* power off sensor */
-	ret = __ov8830_s_power(sd, 0);
-	mutex_unlock(&dev->input_lock);
+	ret = power_down(sd);
 	if (ret) {
 		v4l2_err(client, "ov8830 power-down err.\n");
-		return ret;
+		goto fail_csi_cfg;
 	}
+	mutex_unlock(&dev->input_lock);
 
 	return 0;
 
-fail_detect:
-	dev->platform_data->csi_cfg(sd, 0);
 fail_csi_cfg:
-	__ov8830_s_power(sd, 0);
+	dev->platform_data->csi_cfg(sd, 0);
+fail_power_on:
+	power_down(sd);
 	dev_err(&client->dev, "sensor power-gating failed\n");
 fail_power_off:
 	mutex_unlock(&dev->input_lock);
