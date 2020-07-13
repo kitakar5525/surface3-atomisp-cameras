@@ -1,0 +1,160 @@
+From b2624ef95700f117ca25bbf87917c568e323b79d Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Sun, 28 Jun 2020 14:08:10 +0900
+Subject: [PATCH 1/6] DEBUG: intel_pmic: print what driver is used for pmic
+
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+---
+ drivers/acpi/pmic/intel_pmic_bxtwc.c    | 8 +++++++-
+ drivers/acpi/pmic/intel_pmic_bytcrc.c   | 9 ++++++++-
+ drivers/acpi/pmic/intel_pmic_chtcrc.c   | 9 ++++++++-
+ drivers/acpi/pmic/intel_pmic_chtdc_ti.c | 3 +++
+ drivers/acpi/pmic/intel_pmic_chtwc.c    | 8 +++++++-
+ drivers/acpi/pmic/intel_pmic_xpower.c   | 3 +++
+ drivers/acpi/pmic/tps68470_pmic.c       | 2 ++
+ 7 files changed, 38 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/acpi/pmic/intel_pmic_bxtwc.c b/drivers/acpi/pmic/intel_pmic_bxtwc.c
+index bd7621edd60b..bf29720500b8 100644
+--- a/drivers/acpi/pmic/intel_pmic_bxtwc.c
++++ b/drivers/acpi/pmic/intel_pmic_bxtwc.c
+@@ -385,11 +385,17 @@ static struct intel_pmic_opregion_data intel_bxtwc_pmic_opregion_data = {
+ static int intel_bxtwc_pmic_opregion_probe(struct platform_device *pdev)
+ {
+ 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
++	int ret;
+ 
+-	return intel_pmic_install_opregion_handler(&pdev->dev,
++	pr_alert("DEBUG: %s() called\n",__FUNCTION__);
++
++	ret = intel_pmic_install_opregion_handler(&pdev->dev,
+ 			ACPI_HANDLE(pdev->dev.parent),
+ 			pmic->regmap,
+ 			&intel_bxtwc_pmic_opregion_data);
++	pr_alert("DEBUG: %s: ret: %d\n",__FUNCTION__, ret);
++
++	return ret;
+ }
+ 
+ static const struct platform_device_id bxt_wc_opregion_id_table[] = {
+diff --git a/drivers/acpi/pmic/intel_pmic_bytcrc.c b/drivers/acpi/pmic/intel_pmic_bytcrc.c
+index 2a692cc4b7ae..f2cdb5e4704c 100644
+--- a/drivers/acpi/pmic/intel_pmic_bytcrc.c
++++ b/drivers/acpi/pmic/intel_pmic_bytcrc.c
+@@ -287,9 +287,16 @@ static struct intel_pmic_opregion_data intel_crc_pmic_opregion_data = {
+ static int intel_crc_pmic_opregion_probe(struct platform_device *pdev)
+ {
+ 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
+-	return intel_pmic_install_opregion_handler(&pdev->dev,
++	int ret;
++
++	pr_alert("DEBUG: %s() called\n",__FUNCTION__);
++
++	ret = intel_pmic_install_opregion_handler(&pdev->dev,
+ 			ACPI_HANDLE(pdev->dev.parent), pmic->regmap,
+ 			&intel_crc_pmic_opregion_data);
++	pr_alert("DEBUG: %s: ret: %d\n",__FUNCTION__, ret);
++
++	return ret;
+ }
+ 
+ static struct platform_driver intel_crc_pmic_opregion_driver = {
+diff --git a/drivers/acpi/pmic/intel_pmic_chtcrc.c b/drivers/acpi/pmic/intel_pmic_chtcrc.c
+index ebf8d3187df1..30398d9f5d4d 100644
+--- a/drivers/acpi/pmic/intel_pmic_chtcrc.c
++++ b/drivers/acpi/pmic/intel_pmic_chtcrc.c
+@@ -30,9 +30,16 @@ static struct intel_pmic_opregion_data intel_chtcrc_pmic_opregion_data = {
+ static int intel_chtcrc_pmic_opregion_probe(struct platform_device *pdev)
+ {
+ 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
+-	return intel_pmic_install_opregion_handler(&pdev->dev,
++	int ret;
++
++	pr_alert("DEBUG: %s() called\n",__FUNCTION__);
++
++	ret = intel_pmic_install_opregion_handler(&pdev->dev,
+ 			ACPI_HANDLE(pdev->dev.parent), pmic->regmap,
+ 			&intel_chtcrc_pmic_opregion_data);
++	pr_alert("DEBUG: %s: ret: %d\n",__FUNCTION__, ret);
++
++	return ret;
+ }
+ 
+ static struct platform_driver intel_chtcrc_pmic_opregion_driver = {
+diff --git a/drivers/acpi/pmic/intel_pmic_chtdc_ti.c b/drivers/acpi/pmic/intel_pmic_chtdc_ti.c
+index a5101b07611a..519ed2fea2ed 100644
+--- a/drivers/acpi/pmic/intel_pmic_chtdc_ti.c
++++ b/drivers/acpi/pmic/intel_pmic_chtdc_ti.c
+@@ -110,9 +110,12 @@ static int chtdc_ti_pmic_opregion_probe(struct platform_device *pdev)
+ 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
+ 	int err;
+ 
++	pr_alert("DEBUG: %s() called\n",__FUNCTION__);
++
+ 	err = intel_pmic_install_opregion_handler(&pdev->dev,
+ 			ACPI_HANDLE(pdev->dev.parent), pmic->regmap,
+ 			&chtdc_ti_pmic_opregion_data);
++	pr_alert("DEBUG: %s: ret: %d\n",__FUNCTION__, err);
+ 	if (err < 0)
+ 		return err;
+ 
+diff --git a/drivers/acpi/pmic/intel_pmic_chtwc.c b/drivers/acpi/pmic/intel_pmic_chtwc.c
+index 7ffd5624b8e1..221dddf9e373 100644
+--- a/drivers/acpi/pmic/intel_pmic_chtwc.c
++++ b/drivers/acpi/pmic/intel_pmic_chtwc.c
+@@ -264,11 +264,17 @@ static struct intel_pmic_opregion_data intel_cht_wc_pmic_opregion_data = {
+ static int intel_cht_wc_pmic_opregion_probe(struct platform_device *pdev)
+ {
+ 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
++	int ret;
+ 
+-	return intel_pmic_install_opregion_handler(&pdev->dev,
++	pr_alert("DEBUG: %s() called\n",__FUNCTION__);
++
++	ret = intel_pmic_install_opregion_handler(&pdev->dev,
+ 			ACPI_HANDLE(pdev->dev.parent),
+ 			pmic->regmap,
+ 			&intel_cht_wc_pmic_opregion_data);
++	pr_alert("DEBUG: %s: ret: %d\n",__FUNCTION__, ret);
++
++	return ret;
+ }
+ 
+ static const struct platform_device_id cht_wc_opregion_id_table[] = {
+diff --git a/drivers/acpi/pmic/intel_pmic_xpower.c b/drivers/acpi/pmic/intel_pmic_xpower.c
+index a091d5a8392c..dc6c11642967 100644
+--- a/drivers/acpi/pmic/intel_pmic_xpower.c
++++ b/drivers/acpi/pmic/intel_pmic_xpower.c
+@@ -282,6 +282,8 @@ static int intel_xpower_pmic_opregion_probe(struct platform_device *pdev)
+ 	acpi_status status;
+ 	int result;
+ 
++	pr_alert("DEBUG: %s() called\n",__FUNCTION__);
++
+ 	status = acpi_install_address_space_handler(ACPI_HANDLE(parent),
+ 			ACPI_ADR_SPACE_GPIO, intel_xpower_pmic_gpio_handler,
+ 			NULL, NULL);
+@@ -291,6 +293,7 @@ static int intel_xpower_pmic_opregion_probe(struct platform_device *pdev)
+ 	result = intel_pmic_install_opregion_handler(&pdev->dev,
+ 					ACPI_HANDLE(parent), axp20x->regmap,
+ 					&intel_xpower_pmic_opregion_data);
++	pr_alert("DEBUG: %s: ret: %d\n",__FUNCTION__, result);
+ 	if (result)
+ 		acpi_remove_address_space_handler(ACPI_HANDLE(parent),
+ 						  ACPI_ADR_SPACE_GPIO,
+diff --git a/drivers/acpi/pmic/tps68470_pmic.c b/drivers/acpi/pmic/tps68470_pmic.c
+index ebd03e472955..c2b5cd243499 100644
+--- a/drivers/acpi/pmic/tps68470_pmic.c
++++ b/drivers/acpi/pmic/tps68470_pmic.c
+@@ -376,6 +376,8 @@ static int tps68470_pmic_opregion_probe(struct platform_device *pdev)
+ 	struct tps68470_pmic_opregion *opregion;
+ 	acpi_status status;
+ 
++	pr_alert("DEBUG: %s() called\n",__FUNCTION__);
++
+ 	if (!dev || !tps68470_regmap) {
+ 		dev_warn(dev, "dev or regmap is NULL\n");
+ 		return -EINVAL;
+-- 
+2.27.0
+

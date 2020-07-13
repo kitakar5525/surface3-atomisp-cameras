@@ -1,0 +1,51 @@
+From 09083f6f123bbbc870819f0f54bb9ae926a26069 Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Fri, 26 Jun 2020 12:33:45 +0900
+Subject: [PATCH 5/6] media: atomisp: transpose minus 1 to left for
+ package.count
+
+When package.count is zero (observed on Surface 3 before, take a look
+at "Note" below), the following code in gmin_get_config_dsm_var() loops
+infinitely:
+
+    /* Seek for the desired var */
+    for (i = 0; i < obj->package.count - 1; i += 2) {
+        [...]
+
+then causes NULL pointer dereference eventually.
+
+If the minus 1 is transposed to the left, it won't loop infinitely now.
+
+Note: after commit 70731756f328 ("media: atomisp: Don't try to parse
+      unexpected ACPI object type"), it properly aborts the function
+      gmin_get_config_dsm_var() for Surface 3. So, now it doesn't reach
+      the aforementioned "for loop" at least for the device. I'm not sure
+      if there are cases where package.count is zero now, but I think
+      addressing this issue still makes sense just in case.
+
+TODO: why the code mentioned above loops infinitely?
+
+Reference: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/input/misc/soc_button_array.c?id=11ba468877bb23f28956a35e896356252d63c983#n245
+Reference: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/hwtracing/coresight/coresight-platform.c?id=11ba468877bb23f28956a35e896356252d63c983#n533
+Fixes: 387041cda44e ("media: atomisp: improve sensor detection code to use _DSM table")
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+---
+ drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
+index 63a812ac2b43..3e17e296e68b 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
++++ b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
+@@ -1158,7 +1158,7 @@ static int gmin_get_config_dsm_var(struct device *dev,
+ #endif
+ 
+ 	/* Seek for the desired var */
+-	for (i = 0; i < obj->package.count - 1; i += 2) {
++	for (i = 0; (i + 1) < obj->package.count; i += 2) {
+ 		if (obj->package.elements[i].type == ACPI_TYPE_STRING &&
+ 		    !strcmp(obj->package.elements[i].string.pointer, var)) {
+ 			/* Next element should be the required value */
+-- 
+2.27.0
+
