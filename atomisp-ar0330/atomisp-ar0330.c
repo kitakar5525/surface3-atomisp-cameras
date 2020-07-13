@@ -11,7 +11,6 @@
 #include <linux/delay.h>
 #include <linux/i2c.h>
 #include <linux/module.h>
-#include <linux/pm_runtime.h>
 #include <linux/slab.h>
 #include <linux/sysfs.h>
 #include <linux/version.h>
@@ -491,7 +490,6 @@ static int __ar0330_stop_stream(struct ar0330 *ar0330)
 static int ar0330_s_stream(struct v4l2_subdev *sd, int on)
 {
 	struct ar0330 *ar0330 = to_ar0330(sd);
-	struct i2c_client *client = ar0330->client;
 	int ret = 0;
 
 	mutex_lock(&ar0330->mutex);
@@ -500,21 +498,13 @@ static int ar0330_s_stream(struct v4l2_subdev *sd, int on)
 		goto unlock_and_return;
 
 	if (on) {
-		ret = pm_runtime_get_sync(&client->dev);
-		if (ret < 0) {
-			pm_runtime_put_noidle(&client->dev);
-			goto unlock_and_return;
-		}
-
 		ret = __ar0330_start_stream(ar0330);
 		if (ret) {
 			v4l2_err(sd, "start stream failed while write regs\n");
-			pm_runtime_put(&client->dev);
 			goto unlock_and_return;
 		}
 	} else {
 		__ar0330_stop_stream(ar0330);
-		pm_runtime_put(&client->dev);
 	}
 
 	ar0330->streaming = on;
@@ -535,43 +525,6 @@ static int ar0330_g_frame_interval(struct v4l2_subdev *sd,
 	mutex_unlock(&ar0330->mutex);
 
 	return 0;
-}
-
-static int ar0330_s_power(struct v4l2_subdev *sd, int on)
-{
-	struct ar0330 *ar0330 = to_ar0330(sd);
-	struct i2c_client *client = ar0330->client;
-	int ret = 0;
-
-	mutex_lock(&ar0330->mutex);
-
-	/* If the power state is not modified - no work to do. */
-	if (ar0330->power_on == !!on)
-		goto unlock_and_return;
-
-	if (on) {
-		ret = pm_runtime_get_sync(&client->dev);
-		if (ret < 0) {
-			pm_runtime_put_noidle(&client->dev);
-			goto unlock_and_return;
-		}
-
-		ret = ar0330_write_array(ar0330->client, ar0330_global_regs);
-		if (ret) {
-			v4l2_err(sd, "could not set init registers\n");
-			pm_runtime_put_noidle(&client->dev);
-			goto unlock_and_return;
-		}
-		ar0330->power_on = true;
-	} else {
-		pm_runtime_put(&client->dev);
-		ar0330->power_on = false;
-	}
-
-unlock_and_return:
-	mutex_unlock(&ar0330->mutex);
-
-	return ret;
 }
 
 /* Calculate the delay in us by clock rate and clock cycles */
@@ -711,24 +664,29 @@ static void __ar0330_power_off(struct ar0330 *ar0330)
 		dev_err(&client->dev, "vprog failed.\n");
 }
 
-static int ar0330_runtime_resume(struct device *dev)
+static int ar0330_s_power(struct v4l2_subdev *sd, int on)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct ar0330 *ar0330 = to_ar0330(sd);
+	int ret = 0;
 
-	return __ar0330_power_on(ar0330);
-}
+	mutex_lock(&ar0330->mutex);
 
-static int ar0330_runtime_suspend(struct device *dev)
-{
-	struct i2c_client *client = to_i2c_client(dev);
-	struct v4l2_subdev *sd = i2c_get_clientdata(client);
-	struct ar0330 *ar0330 = to_ar0330(sd);
+	if (on == 0) {
+		power_down(ar0330);
+	} else {
+		ret = power_up(ar0330);
+		if (!ret)
+		ret = ar0330_write_array(ar0330->client, ar0330_global_regs);
+		if (ret) {
+			v4l2_err(sd, "could not set init registers\n");
+			goto unlock_and_return;
+		}
+	}
 
-	__ar0330_power_off(ar0330);
+unlock_and_return:
+	mutex_unlock(&ar0330->mutex);
 
-	return 0;
+	return ret;
 }
 
 static int ar0330_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
@@ -765,11 +723,6 @@ static int ar0330_enum_frame_interval(struct v4l2_subdev *sd,
 	fie->interval = supported_modes[fie->index].max_fps;
 	return 0;
 }
-
-static const struct dev_pm_ops ar0330_pm_ops = {
-	SET_RUNTIME_PM_OPS(ar0330_runtime_suspend,
-			   ar0330_runtime_resume, NULL)
-};
 
 static const struct v4l2_subdev_internal_ops ar0330_internal_ops = {
 	.open = ar0330_open,
@@ -831,9 +784,6 @@ static int ar0330_set_ctrl(struct v4l2_ctrl *ctrl)
 	struct i2c_client *client = ar0330->client;
 	int ret = 0;
 
-	if (pm_runtime_get(&client->dev) <= 0)
-		return 0;
-
 	switch (ctrl->id) {
 	case V4L2_CID_EXPOSURE:
 		ret = ar0330_write(ar0330->client,
@@ -854,8 +804,6 @@ static int ar0330_set_ctrl(struct v4l2_ctrl *ctrl)
 			 __func__, ctrl->id, ctrl->val);
 		break;
 	}
-
-	pm_runtime_put(&client->dev);
 
 	return ret;
 }
@@ -1071,10 +1019,6 @@ static int ar0330_probe(struct i2c_client *client,
 	if (ret < 0)
 		goto err_power_off;
 
-	pm_runtime_set_active(dev);
-	pm_runtime_enable(dev);
-	pm_runtime_idle(dev);
-
 	return 0;
 
 err_power_off:
@@ -1098,6 +1042,8 @@ static int ar0330_remove(struct i2c_client *client)
 
 	ar0330->platform_data->csi_cfg(sd, 0);
 
+	__ar0330_power_off(ar0330);
+
 	/* TODO: atomisp sensor drivers use v4l2_device_unregister_subdev()
 	 * instead. What's the difference? */
 	// v4l2_async_unregister_subdev(sd);
@@ -1108,11 +1054,6 @@ static int ar0330_remove(struct i2c_client *client)
 	media_entity_cleanup(&sd->entity);
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
 	mutex_destroy(&ar0330->mutex);
-
-	pm_runtime_disable(&client->dev);
-	if (!pm_runtime_status_suspended(&client->dev))
-		__ar0330_power_off(ar0330);
-	pm_runtime_set_suspended(&client->dev);
 
 	return 0;
 }
@@ -1131,7 +1072,6 @@ static const struct i2c_device_id ar0330_match_id[] = {
 static struct i2c_driver ar0330_i2c_driver = {
 	.driver = {
 		.name = AR0330_NAME,
-		.pm = &ar0330_pm_ops,
 		.acpi_match_table = ACPI_PTR(ar0330_acpi_ids),
 	},
 	.probe		= &ar0330_probe,
