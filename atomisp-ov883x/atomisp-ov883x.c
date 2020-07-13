@@ -1474,7 +1474,7 @@ fail_csi_cfg:
 }
 
 static int
-ov8830_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh,
+ov8830_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
 		       struct v4l2_subdev_mbus_code_enum *code)
 {
 	if (code->index)
@@ -1485,7 +1485,7 @@ ov8830_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh,
 }
 
 static int
-ov8830_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh,
+ov8830_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
 			struct v4l2_subdev_frame_size_enum *fse)
 {
 	int index = fse->index;
@@ -1508,33 +1508,33 @@ ov8830_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh,
 
 static struct v4l2_mbus_framefmt *
 __ov8830_get_pad_format(struct ov8830_device *sensor,
-			 struct v4l2_subdev_fh *fh, unsigned int pad,
+			 struct v4l2_subdev_pad_config *cfg, unsigned int pad,
 			 enum v4l2_subdev_format_whence which)
 {
 	if (which == V4L2_SUBDEV_FORMAT_TRY)
-		return v4l2_subdev_get_try_format(fh, pad);
+		return v4l2_subdev_get_try_format(&sensor->sd, cfg, pad);
 
 	return &sensor->format;
 }
 
 static int
-ov8830_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh,
+ov8830_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
 		       struct v4l2_subdev_format *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 
-	fmt->format = *__ov8830_get_pad_format(dev, fh, fmt->pad, fmt->which);
+	fmt->format = *__ov8830_get_pad_format(dev, cfg, fmt->pad, fmt->which);
 
 	return 0;
 }
 
 static int
-ov8830_set_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh,
+ov8830_set_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
 		       struct v4l2_subdev_format *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
-			__ov8830_get_pad_format(dev, fh, fmt->pad, fmt->which);
+			__ov8830_get_pad_format(dev, cfg, fmt->pad, fmt->which);
 
 	*format = fmt->format;
 
