@@ -857,6 +857,8 @@ static int ar0330_initialize_controls(struct ar0330 *ar0330)
 		return ret;
 	handler->lock = &ar0330->mutex;
 
+	/* TODO: atomisp drivers use v4l2_ctrl_new_custom() instead. What's
+	 * the difference? */
 	ctrl = v4l2_ctrl_new_int_menu(handler, NULL, V4L2_CID_LINK_FREQ,
 				      0, 0, link_freq_menu_items);
 	if (ctrl)
@@ -900,6 +902,7 @@ static int ar0330_initialize_controls(struct ar0330 *ar0330)
 		goto err_free_handler;
 	}
 
+	/* Use same lock for controls as for everything else. */
 	ar0330->subdev.ctrl_handler = handler;
 
 	return 0;
