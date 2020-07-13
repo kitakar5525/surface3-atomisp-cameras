@@ -1580,7 +1580,6 @@ static const struct v4l2_subdev_core_ops ov8830_core_ops = {
 	.init = ov8830_init,
 };
 
-/* REVISIT: Do we need pad operations? */
 static const struct v4l2_subdev_pad_ops ov8830_pad_ops = {
 	.enum_mbus_code = ov8830_enum_mbus_code,
 	.enum_frame_size = ov8830_enum_frame_size,
