@@ -1067,6 +1067,8 @@ err_clean_entity:
 err_power_off:
 	__ar0330_power_off(ar0330);
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
+out_free:
+	atomisp_gmin_remove_subdev(sd);
 err_destroy_mutex:
 	mutex_destroy(&ar0330->mutex);
 
@@ -1079,6 +1081,7 @@ static int ar0330_remove(struct i2c_client *client)
 	struct ar0330 *ar0330 = to_ar0330(sd);
 
 	v4l2_async_unregister_subdev(sd);
+	atomisp_gmin_remove_subdev(sd);
 	media_entity_cleanup(&sd->entity);
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
 	mutex_destroy(&ar0330->mutex);
