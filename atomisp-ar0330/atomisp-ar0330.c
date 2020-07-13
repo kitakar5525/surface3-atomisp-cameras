@@ -928,6 +928,71 @@ static int ar0330_check_sensor_id(struct ar0330 *ar0330,
 	return 0;
 }
 
+static int ar0330_s_config(struct v4l2_subdev *sd,
+			   int irq, void *platform_data)
+{
+	struct ar0330 *dev = to_ar0330(sd);
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+	int ret = 0;
+
+	if (!platform_data)
+		return -ENODEV;
+
+	dev->platform_data =
+	    (struct camera_sensor_platform_data *)platform_data;
+
+	mutex_lock(&dev->mutex);
+	/* power off the module, then power on it in future
+	 * as first power on by board may not fulfill the
+	 * power on sequqence needed by the module
+	 */
+	__ar0330_power_off(dev);
+	/* TODO: make __ar0330_power_off() return value? */
+	// if (ret) {
+	// 	dev_err(&client->dev, "ar0330 power-off err.\n");
+	// 	goto fail_power_off;
+	// }
+
+	ret = __ar0330_power_on(dev);
+	if (ret) {
+		dev_err(&client->dev, "ar0330 power-up err.\n");
+		goto fail_power_on;
+	}
+
+	ret = dev->platform_data->csi_cfg(sd, 1);
+	if (ret)
+		goto fail_csi_cfg;
+
+	/* config & detect sensor */
+	/* NOTE: atomisp drivers use *_detect() function instead. */
+	ret = ar0330_check_sensor_id(dev, client);
+	if (ret) {
+		dev_err(&client->dev, "ar0330_check_sensor_id err s_config.\n");
+		goto fail_csi_cfg;
+	}
+
+	/* turn off sensor, after probed */
+	__ar0330_power_off(dev);
+	/* TODO: make __ar0330_power_off() return value? */
+	// if (ret) {
+	// 	dev_err(&client->dev, "ar0330 power-off err.\n");
+	// 	goto fail_csi_cfg;
+	// }
+	mutex_unlock(&dev->mutex);
+
+	return 0;
+
+fail_csi_cfg:
+	dev->platform_data->csi_cfg(sd, 0);
+fail_power_on:
+	__ar0330_power_off(dev);
+	dev_err(&client->dev, "sensor power-gating failed\n");
+/* TODO: Uncomment this once __ar0330_power_off() started returning value */
+// fail_power_off:
+	mutex_unlock(&dev->mutex);
+	return ret;
+}
+
 static int ar0330_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
