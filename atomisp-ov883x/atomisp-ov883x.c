@@ -1703,8 +1703,7 @@ static const struct v4l2_ctrl_config ctrls[] = {
 	}
 };
 
-static int ov8830_probe(struct i2c_client *client,
-			 const struct i2c_device_id *id)
+static int ov8830_probe(struct i2c_client *client)
 {
 	struct ov8830_device *dev;
 	unsigned int i;
@@ -1780,13 +1779,6 @@ out_free:
 	return ret;
 }
 
-static const struct i2c_device_id ov8830_id[] = {
-	{OV8830_NAME, 0},
-	{}
-};
-
-MODULE_DEVICE_TABLE(i2c, ov8830_id);
-
 static const struct acpi_device_id ov8830_acpi_ids[] = {
        {"OVTI8835"},
        {},
@@ -1799,9 +1791,8 @@ static struct i2c_driver ov8830_driver = {
 		.name = OV8830_NAME,
 		.acpi_match_table = ACPI_PTR(ov8830_acpi_ids),
 	},
-	.probe = ov8830_probe,
+	.probe_new = ov8830_probe,
 	.remove = ov8830_remove,
-	.id_table = ov8830_id,
 };
 
 static __init int ov8830_init_mod(void)
