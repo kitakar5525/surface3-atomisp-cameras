@@ -82,11 +82,6 @@ struct drv201_device {
 #define OV8830_REG_BITS	16
 #define OV8830_REG_MASK	0xFFFF
 
-/* This should be added into include/linux/videodev2.h */
-#ifndef V4L2_IDENT_OV8830
-#define V4L2_IDENT_OV8830	8245
-#endif
-
 /*
  * ov8830 System control registers
  */
