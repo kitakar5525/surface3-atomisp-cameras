@@ -18,6 +18,7 @@
 #include <media/media-entity.h>
 #include <media/v4l2-async.h>
 #include <media/v4l2-ctrls.h>
+#include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
 #include "../include/linux/atomisp_gmin_platform.h"
 
@@ -1090,6 +1091,7 @@ err_power_off:
 	__ar0330_power_off(ar0330);
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
 out_free:
+	v4l2_device_unregister_subdev(sd);
 	atomisp_gmin_remove_subdev(sd);
 err_destroy_mutex:
 	mutex_destroy(&ar0330->mutex);
