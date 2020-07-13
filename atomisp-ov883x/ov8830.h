@@ -60,7 +60,7 @@ struct drv201_device {
 	s32 focus;			/* Current focus value */
 	struct timespec64 focus_time;	/* Time when focus was last time set */
 	__u8 buffer[4];			/* Used for i2c transactions */
-	const struct camera_af_platform_data *platform_data;
+	const struct atomisp_platform_data *platform_data;
 };
 
 #define	OV8830_NAME	"ov8830"
