@@ -1018,8 +1018,7 @@ fail_power_on:
 	return ret;
 }
 
-static int ar0330_probe(struct i2c_client *client,
-			const struct i2c_device_id *id)
+static int ar0330_probe(struct i2c_client *client)
 {
 	struct device *dev = &client->dev;
 	struct ar0330 *ar0330;
@@ -1131,20 +1130,14 @@ static const struct acpi_device_id ar0330_acpi_ids[] = {
 };
 MODULE_DEVICE_TABLE(acpi, ar0330_acpi_ids);
 
-static const struct i2c_device_id ar0330_match_id[] = {
-	{ "Aptina,ar0330", 0 },
-	{ },
-};
-
 static struct i2c_driver ar0330_i2c_driver = {
 	.driver = {
 		.name = AR0330_NAME,
 		.pm = &ar0330_pm_ops,
 		.acpi_match_table = ACPI_PTR(ar0330_acpi_ids),
 	},
-	.probe		= &ar0330_probe,
+	.probe_new		= &ar0330_probe,
 	.remove		= &ar0330_remove,
-	.id_table	= ar0330_match_id,
 };
 
 static int __init sensor_mod_init(void)
