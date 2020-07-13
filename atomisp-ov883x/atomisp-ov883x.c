@@ -29,18 +29,12 @@
 #include <linux/kmod.h>
 #include <linux/device.h>
 #include <linux/delay.h>
-#include <linux/fs.h>
-#include <linux/init.h>
 #include <linux/slab.h>
-#include <linux/delay.h>
 #include <linux/i2c.h>
-#include <linux/gpio.h>
 #include <linux/moduleparam.h>
-#include <linux/delay.h>
-#include <linux/io.h>
-#include <linux/bitops.h>
 #include <media/v4l2-device.h>
-#include <asm/intel-mid.h>
+#include <linux/io.h>
+#include <linux/acpi.h>
 #include "include/atomisp_gmin_platform.h"
 
 #include "ov8830.h"
