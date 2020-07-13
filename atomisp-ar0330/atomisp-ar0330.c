@@ -17,7 +17,6 @@
 #include <linux/slab.h>
 #include <linux/sysfs.h>
 #include <linux/version.h>
-#include <linux/rk-camera-module.h>
 #include <media/media-entity.h>
 #include <media/v4l2-async.h>
 #include <media/v4l2-ctrls.h>
@@ -120,10 +119,6 @@ struct ar0330 {
 	bool				streaming;
 	bool				power_on;
 	const struct ar0330_mode *cur_mode;
-	u32					module_index;
-	const char			*module_facing;
-	const char			*module_name;
-	const char			*len_name;
 };
 
 #define to_ar0330(sd) container_of(sd, struct ar0330, subdev)
@@ -474,63 +469,6 @@ static int ar0330_enable_test_pattern(struct ar0330 *ar0330, u32 pattern)
 	return 0;
 }
 
-static void ar0330_get_module_inf(struct ar0330 *ar0330,
-				  struct rkmodule_inf *inf)
-{
-	memset(inf, 0, sizeof(*inf));
-	strlcpy(inf->base.sensor, AR0330_NAME, sizeof(inf->base.sensor));
-	strlcpy(inf->base.module, ar0330->module_name,
-		sizeof(inf->base.module));
-	strlcpy(inf->base.lens, ar0330->len_name, sizeof(inf->base.lens));
-}
-
-static long ar0330_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
-{
-	struct ar0330 *ar0330 = to_ar0330(sd);
-	long ret = 0;
-
-	switch (cmd) {
-	case RKMODULE_GET_MODULE_INFO:
-		ar0330_get_module_inf(ar0330, (struct rkmodule_inf *)arg);
-		break;
-	default:
-		ret = -ENOIOCTLCMD;
-		break;
-	}
-
-	return ret;
-}
-
-#ifdef CONFIG_COMPAT
-static long ar0330_compat_ioctl32(struct v4l2_subdev *sd,
-				  unsigned int cmd, unsigned long arg)
-{
-	void __user *up = compat_ptr(arg);
-	struct rkmodule_inf *inf;
-	long ret;
-
-	switch (cmd) {
-	case RKMODULE_GET_MODULE_INFO:
-		inf = kzalloc(sizeof(*inf), GFP_KERNEL);
-		if (!inf) {
-			ret = -ENOMEM;
-			return ret;
-		}
-
-		ret = ar0330_ioctl(sd, cmd, inf);
-		if (!ret)
-			ret = copy_to_user(up, inf, sizeof(*inf));
-		kfree(inf);
-		break;
-	default:
-		ret = -ENOIOCTLCMD;
-		break;
-	}
-
-	return ret;
-}
-#endif
-
 static int __ar0330_start_stream(struct ar0330 *ar0330)
 {
 	int ret;
@@ -779,10 +717,6 @@ static const struct v4l2_subdev_internal_ops ar0330_internal_ops = {
 
 static const struct v4l2_subdev_core_ops ar0330_core_ops = {
 	.s_power = ar0330_s_power,
-	.ioctl = ar0330_ioctl,
-#ifdef CONFIG_COMPAT
-	.compat_ioctl32 = ar0330_compat_ioctl32,
-#endif
 };
 
 static const struct v4l2_subdev_video_ops ar0330_video_ops = {
@@ -973,10 +907,8 @@ static int ar0330_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	struct device *dev = &client->dev;
-	struct device_node *node = dev->of_node;
 	struct ar0330 *ar0330;
 	struct v4l2_subdev *sd;
-	char facing[2];
 	int ret;
 
 	dev_info(dev, "wpzz driver version: %02x.%02x.%02x",
@@ -987,19 +919,6 @@ static int ar0330_probe(struct i2c_client *client,
 	ar0330 = devm_kzalloc(dev, sizeof(*ar0330), GFP_KERNEL);
 	if (!ar0330)
 		return -ENOMEM;
-
-	ret = of_property_read_u32(node, RKMODULE_CAMERA_MODULE_INDEX,
-				   &ar0330->module_index);
-	ret |= of_property_read_string(node, RKMODULE_CAMERA_MODULE_FACING,
-				       &ar0330->module_facing);
-	ret |= of_property_read_string(node, RKMODULE_CAMERA_MODULE_NAME,
-				       &ar0330->module_name);
-	ret |= of_property_read_string(node, RKMODULE_CAMERA_LENS_NAME,
-				       &ar0330->len_name);
-	if (ret) {
-		dev_err(dev, "could not get module information!\n");
-		return -EINVAL;
-	}
 
 	ar0330->client = client;
 	ar0330->cur_mode = &supported_modes[0];
@@ -1053,14 +972,7 @@ static int ar0330_probe(struct i2c_client *client,
 		goto err_power_off;
 #endif
 
-	memset(facing, 0, sizeof(facing));
-	if (strcmp(ar0330->module_facing, "back") == 0)
-		facing[0] = 'b';
-	else
-		facing[0] = 'f';
-
-	snprintf(sd->name, sizeof(sd->name), "m%02d_%s_%s %s",
-		 ar0330->module_index, facing,
+	snprintf(sd->name, sizeof(sd->name), "%s %s",
 		 AR0330_NAME, dev_name(sd->dev));
 	ret = v4l2_async_register_subdev_sensor_common(sd);
 	if (ret) {
