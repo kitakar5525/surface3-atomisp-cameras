@@ -1234,7 +1234,7 @@ static int ov8830_s_stream(struct v4l2_subdev *sd, int enable)
 }
 
 static int ov8830_s_config(struct v4l2_subdev *sd,
-			    int irq, void *pdata)
+			    int irq, void *platform_data)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
@@ -1242,10 +1242,11 @@ static int ov8830_s_config(struct v4l2_subdev *sd,
 	u16 sensor_id;
 	int ret;
 
-	if (pdata == NULL)
+	if (!platform_data)
 		return -ENODEV;
 
-	dev->platform_data = pdata;
+	dev->platform_data =
+	    (struct camera_sensor_platform_data *)platform_data;
 
 	mutex_lock(&dev->input_lock);
 
