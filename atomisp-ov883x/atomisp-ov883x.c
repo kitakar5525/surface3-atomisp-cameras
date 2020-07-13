@@ -362,7 +362,7 @@ static int drv201_init(struct v4l2_subdev *sd)
 	struct drv201_device *dev = to_drv201_device(sd);
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
 
-	dev->platform_data = camera_get_af_platform_data();
+	dev->platform_data = atomisp_get_platform_data();
 	if (!dev->platform_data) {
 		v4l2_err(client, "failed to get platform data\n");
 		return -ENXIO;
