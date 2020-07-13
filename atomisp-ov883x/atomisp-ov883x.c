@@ -41,6 +41,7 @@
 #include <linux/bitops.h>
 #include <media/v4l2-device.h>
 #include <asm/intel-mid.h>
+#include "include/atomisp_gmin_platform.h"
 
 #include "ov8830.h"
 #include "ov8835.h"
@@ -355,19 +356,6 @@ static int drv201_read8(struct v4l2_subdev *sd, int reg)
 		return -EIO;
 
 	return dev->buffer[0];
-}
-
-static int drv201_init(struct v4l2_subdev *sd)
-{
-	struct drv201_device *dev = to_drv201_device(sd);
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-
-	dev->platform_data = atomisp_get_platform_data();
-	if (!dev->platform_data) {
-		v4l2_err(client, "failed to get platform data\n");
-		return -ENXIO;
-	}
-	return 0;
 }
 
 static int power_ctrl(struct v4l2_subdev *sd, bool flag)
@@ -1890,6 +1878,7 @@ static int ov8830_probe(struct i2c_client *client,
 	struct ov8830_device *dev;
 	unsigned int i;
 	int ret;
+	void *pdata;
 
 	/* allocate sensor device & init sub device */
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
@@ -1903,16 +1892,21 @@ static int ov8830_probe(struct i2c_client *client,
 	dev->fmt_idx = 0;
 	v4l2_i2c_subdev_init(&(dev->sd), client, &ov8830_ops);
 
-	ret = drv201_init(&dev->sd);
-	if (ret < 0)
+	pdata = gmin_camera_platform_data(&dev->sd,
+					  ATOMISP_INPUT_FORMAT_RAW_10,
+					  atomisp_bayer_order_bggr);
+	if (!pdata) {
+		ret = -EINVAL;
+		goto out_free;
+	}
+
+	ret = ov8830_s_config(&dev->sd, client->irq, pdata);
+	if (ret)
 		goto out_free;
 
-	if (client->dev.platform_data) {
-		ret = ov8830_s_config(&dev->sd, client->irq,
-				      client->dev.platform_data);
-		if (ret)
-			goto out_free;
-	}
+	ret = atomisp_register_i2c_module(&dev->sd, pdata, RAW_CAMERA);
+	if (ret)
+		goto out_free;
 
 	dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	dev->pad.flags = MEDIA_PAD_FL_SOURCE;
