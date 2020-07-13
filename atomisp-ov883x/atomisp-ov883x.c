@@ -1243,6 +1243,15 @@ static int ov8830_s_config(struct v4l2_subdev *sd,
 	    (struct camera_sensor_platform_data *)platform_data;
 
 	mutex_lock(&dev->input_lock);
+	/* power off the module, then power on it in future
+	 * as first power on by board may not fulfill the
+	 * power on sequqence needed by the module
+	 */
+	ret = power_down(sd);
+	if (ret) {
+		dev_err(&client->dev, "ov8830 power-off err.\n");
+		goto fail_power_off;
+	}
 
 	ret = __ov8830_s_power(sd, 1);
 	if (ret) {
@@ -1279,8 +1288,9 @@ fail_detect:
 	dev->platform_data->csi_cfg(sd, 0);
 fail_csi_cfg:
 	__ov8830_s_power(sd, 0);
-	mutex_unlock(&dev->input_lock);
 	dev_err(&client->dev, "sensor power-gating failed\n");
+fail_power_off:
+	mutex_unlock(&dev->input_lock);
 	return ret;
 }
 
