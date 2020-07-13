@@ -1121,127 +1121,6 @@ static int nearest_resolution_index(struct v4l2_subdev *sd, int w, int h)
 	return idx;
 }
 
-static int get_resolution_index(struct v4l2_subdev *sd, int w, int h)
-{
-	int i;
-	struct ov8830_device *dev = to_ov8830_sensor(sd);
-
-	for (i = 0; i < dev->entries_curr_table; i++) {
-		if (w != dev->curr_res_table[i].width)
-			continue;
-		if (h != dev->curr_res_table[i].height)
-			continue;
-		/* Found it */
-		return i;
-	}
-	return -1;
-}
-
-static int __ov8830_try_mbus_fmt(struct v4l2_subdev *sd,
-				 struct v4l2_mbus_framefmt *fmt)
-{
-	int idx;
-	struct ov8830_device *dev = to_ov8830_sensor(sd);
-
-	if (!fmt)
-		return -EINVAL;
-
-	if ((fmt->width > OV8830_RES_WIDTH_MAX) ||
-	    (fmt->height > OV8830_RES_HEIGHT_MAX)) {
-		fmt->width = OV8830_RES_WIDTH_MAX;
-		fmt->height = OV8830_RES_HEIGHT_MAX;
-	} else {
-		idx = nearest_resolution_index(sd, fmt->width, fmt->height);
-
-		/*
-		 * nearest_resolution_index() doesn't return smaller resolutions.
-		 * If it fails, it means the requested resolution is higher than we
-		 * can support. Fallback to highest possible resolution in this case.
-		 */
-		if (idx == -1)
-			idx = dev->entries_curr_table - 1;
-
-		fmt->width = dev->curr_res_table[idx].width;
-		fmt->height = dev->curr_res_table[idx].height;
-	}
-
-	fmt->code = MEDIA_BUS_FMT_SBGGR10_1X10;
-	return 0;
-}
-
-static int ov8830_try_mbus_fmt(struct v4l2_subdev *sd,
-			       struct v4l2_mbus_framefmt *fmt)
-{
-	struct ov8830_device *dev = to_ov8830_sensor(sd);
-	int r;
-
-	mutex_lock(&dev->input_lock);
-	r = __ov8830_try_mbus_fmt(sd, fmt);
-	mutex_unlock(&dev->input_lock);
-
-	return r;
-}
-
-static int ov8830_s_mbus_fmt(struct v4l2_subdev *sd,
-			      struct v4l2_mbus_framefmt *fmt)
-{
-	struct ov8830_device *dev = to_ov8830_sensor(sd);
-	struct camera_mipi_info *ov8830_info = NULL;
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-	u16 hts, vts;
-	int ret;
-	const struct ov8830_resolution *res;
-
-	ov8830_info = v4l2_get_subdev_hostdata(sd);
-	if (ov8830_info == NULL)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-
-	ret = __ov8830_try_mbus_fmt(sd, fmt);
-	if (ret)
-		goto out;
-
-	dev->fmt_idx = get_resolution_index(sd, fmt->width, fmt->height);
-	/* Sanity check */
-	if (unlikely(dev->fmt_idx == -1)) {
-		ret = -EINVAL;
-		goto out;
-	}
-
-	/* Sets the default FPS */
-	dev->fps_index = 0;
-
-	/* Get the current resolution setting */
-	res = &dev->curr_res_table[dev->fmt_idx];
-
-	/* Write the selected resolution table values to the registers */
-	ret = ov8830_write_reg_array(client, res->regs);
-	if (ret)
-		goto out;
-
-	/* Frame timing registers are updates as part of exposure */
-	hts = res->fps_options[dev->fps_index].pixels_per_line;
-	vts = res->fps_options[dev->fps_index].lines_per_frame;
-
-	/*
-	 * update hts, vts, exposure and gain as one block. Note that the vts
-	 * will be changed according to the exposure used. But the maximum vts
-	 * dev->curr_res_table[dev->fmt_idx] should not be changed at all.
-	 */
-	ret = __ov8830_set_exposure(sd, dev->exposure, dev->gain,
-					dev->digital_gain, &hts, &vts);
-	if (ret)
-		goto out;
-
-	ret = ov8830_get_intg_factor(sd, ov8830_info, dev->basic_settings_list);
-
-out:
-	mutex_unlock(&dev->input_lock);
-
-	return ret;
-}
-
 static int ov8830_g_mbus_fmt(struct v4l2_subdev *sd,
 			      struct v4l2_mbus_framefmt *fmt)
 {
@@ -1663,9 +1542,7 @@ static int ov8830_g_skip_frames(struct v4l2_subdev *sd, u32 *frames)
 
 static const struct v4l2_subdev_video_ops ov8830_video_ops = {
 	.s_stream = ov8830_s_stream,
-	.try_mbus_fmt = ov8830_try_mbus_fmt,
 	.g_mbus_fmt = ov8830_g_mbus_fmt,
-	.s_mbus_fmt = ov8830_s_mbus_fmt,
 	.g_frame_interval = ov8830_g_frame_interval,
 	.s_frame_interval = ov8830_s_frame_interval,
 };
