@@ -1,0 +1,66 @@
+From 09e5f4970ea0c30e02ef8bc24eca727d5dd6fe90 Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Sat, 27 Jun 2020 13:07:08 +0900
+Subject: [PATCH 6/6] media: atomsip: add (guessed) platform data for Surface 3
+
+FIXME: CsiPort and CsiLanes are necessary values for atomisp to work,
+but currently those are unknown. I wrote guessed values.
+
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+---
+ .../media/atomisp/pci/atomisp_gmin_platform.c | 32 +++++++++++++++++++
+ 1 file changed, 32 insertions(+)
+
+diff --git a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
+index 3e17e296e68b..9cb3f5d469fa 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
++++ b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
+@@ -321,6 +321,20 @@ static struct gmin_cfg_var i8880_vars[] = {
+ 	{},
+ };
+ 
++/* These are guessed values because Surface 3 doesn't describe these
++ * values in DSDT or EFI. */
++static struct gmin_cfg_var surface3_vars[] = {
++	{"APTA0330:00_CsiPort", "0"},
++	{"APTA0330:00_CsiLanes", "1"},
++
++	/* when port=0 and lanes=4 for ov8835, atomisp fails to init saying:
++	 * atomisp_csi_lane_config: could not find the CSI port setting for 0-4-0
++	 * atomisp_register_entities failed (-22) */
++	{"OVTI8835:00_CsiPort", "1"},
++	{"OVTI8835:00_CsiLanes", "4"},
++	{},
++};
++
+ static const struct dmi_system_id gmin_vars[] = {
+ 	{
+ 		.ident = "BYT-T FFD8",
+@@ -358,6 +372,24 @@ static const struct dmi_system_id gmin_vars[] = {
+ 		},
+ 		.driver_data = i8880_vars,
+ 	},
++	{
++		.ident = "Surface 3",
++		.matches = {
++			DMI_MATCH(DMI_BOARD_NAME, "Surface 3"),
++		},
++		.driver_data = surface3_vars,
++	},
++	{
++		.ident = "Surface 3",
++		.matches = {
++			/* DMI info for Surface 3 with broken DMI table */
++			DMI_MATCH(DMI_BIOS_VENDOR, "American Megatrends Inc."),
++			DMI_MATCH(DMI_BOARD_NAME, "OEMB"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "OEMB"),
++			DMI_MATCH(DMI_SYS_VENDOR, "OEMB"),
++		},
++		.driver_data = surface3_vars,
++	},
+ 	{}
+ };
+ 
+-- 
+2.27.0
+

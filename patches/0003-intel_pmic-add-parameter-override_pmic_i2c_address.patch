@@ -1,0 +1,79 @@
+From 29b68be78989de73dddc08a8668271846d0c8b03 Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Sun, 28 Jun 2020 13:12:31 +0900
+Subject: [PATCH 3/6] intel_pmic: add parameter override_pmic_i2c_address
+
+On Surface 3, when executing intel_soc_pmic_exec_mipi_pmic_seq_element(),
+I recieve the following error:
+
+    [ 7196.356682] intel_soc_pmic_exec_mipi_pmic_seq_element: Not implemented
+    [ 7196.356686] intel_soc_pmic_exec_mipi_pmic_seq_element: i2c-addr: 0x6e reg-addr 0x57 value 0x63 mask 0xff
+
+Surface 3 is an Atom Cherry Trail device and has PMIC device "INT33FD",
+which is called "Crystal Cove PMIC". It seems that usually, _HRV of the
+PMIC is 0x03 if device is Cherry Trail. However, DSDT of Surface 3 describes
+the value is 0x02:
+
+    Name (_HRV, 0x02)  // _HRV: Hardware Revision
+
+due to this _HRV value, intel_pmic_bytcrc will be used as PMIC driver,
+not intel_pmic_chtcrc.
+
+It seems that the PMIC device "INT33FD" is located at i2c address 0x6e
+on Surface 3. The latter driver defines pmic_i2c_address as 0x6e:
+
+    static struct intel_pmic_opregion_data intel_chtcrc_pmic_opregion_data = {
+        .pmic_i2c_address = 0x6e,
+    };
+
+but the former driver doesn't define the address, resulting in function
+intel_soc_pmic_exec_mipi_pmic_seq_element() not working with errors
+mentioned above.
+
+This commit provides a way to override the value of pmic_i2c_address.
+
+Note: maybe defining pmic_i2c_address to also the former driver
+      intel_pmic_bytcrc is better idea, but not sure if the address
+      is the same value for all devices using the driver.
+
+Usage:
+
+    Add string like the following to your bootloader:
+
+    intel_pmic.override_pmic_i2c_address=Y intel_pmic.override_pmic_i2c_address_value=0x6e
+
+Reference: cc0594c4b0ef ("ACPI / PMIC: Add i2c address for thermal control")
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+---
+ drivers/acpi/pmic/intel_pmic.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/acpi/pmic/intel_pmic.c b/drivers/acpi/pmic/intel_pmic.c
+index a371f273f99d..62bfb4ef35f7 100644
+--- a/drivers/acpi/pmic/intel_pmic.c
++++ b/drivers/acpi/pmic/intel_pmic.c
+@@ -29,6 +29,11 @@ struct intel_pmic_opregion {
+ 	struct intel_pmic_regs_handler_ctx ctx;
+ };
+ 
++bool override_pmic_i2c_address;
++module_param(override_pmic_i2c_address, bool, 0400);
++int override_pmic_i2c_address_value;
++module_param(override_pmic_i2c_address_value, int, 0400);
++
+ static struct intel_pmic_opregion *intel_pmic_opregion;
+ 
+ static int pmic_get_reg_bit(int address, struct pmic_table *table,
+@@ -298,6 +303,9 @@ int intel_pmic_install_opregion_handler(struct device *dev, acpi_handle handle,
+ 		goto out_remove_thermal_handler;
+ 	}
+ 
++	if (override_pmic_i2c_address)
++		d->pmic_i2c_address = override_pmic_i2c_address_value;
++
+ 	opregion->data = d;
+ 	intel_pmic_opregion = opregion;
+ 	return 0;
+-- 
+2.27.0
+
