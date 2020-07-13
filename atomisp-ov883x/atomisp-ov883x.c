@@ -1593,8 +1593,6 @@ static int ov8830_remove(struct i2c_client *client)
 {
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
-	if (dev->platform_data->platform_deinit)
-		dev->platform_data->platform_deinit();
 
 	media_entity_cleanup(&dev->sd.entity);
 	v4l2_ctrl_handler_free(&dev->ctrl_handler);
