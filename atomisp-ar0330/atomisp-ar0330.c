@@ -579,6 +579,31 @@ static inline u32 ar0330_cal_delay(u32 cycles)
 	return DIV_ROUND_UP(cycles, AR0330_XVCLK_FREQ / 1000 / 1000);
 }
 
+static int power_ctrl(struct v4l2_subdev *sd, bool flag)
+{
+	int ret = 0;
+	struct ar0330 *dev = to_ar0330(sd);
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+
+	if (!dev || !dev->platform_data)
+		return -ENODEV;
+
+	dev_dbg(&client->dev, "%s: %s", __func__, flag ? "on" : "off");
+
+	if (flag) {
+		ret |= dev->platform_data->v1p8_ctrl(sd, 1);
+		ret |= dev->platform_data->v2p8_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+	}
+
+	if (!flag || ret) {
+		ret |= dev->platform_data->v1p8_ctrl(sd, 0);
+		ret |= dev->platform_data->v2p8_ctrl(sd, 0);
+	}
+
+	return ret;
+}
+
 static int gpio_ctrl(struct v4l2_subdev *sd, bool flag)
 {
 	int ret;
@@ -613,18 +638,22 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 	/* TODO: original ar0330 driver turns gpio off here, really needed? */
 	ret = gpio_ctrl(&ar0330->subdev, 0);
 	if (ret)
-		return ret;
-		/* TODO: use this label instead later when this label added */
-		// goto fail_power;
+		goto fail_power;
+
+	/* power control */
+	ret = power_ctrl(&ar0330->subdev, 1);
+	if (ret)
+		goto fail_power;
+
+	/* Delay after power on. These values are from the original ar0330 */
+	usleep_range(50000, 100000);
 
 	/* gpio ctrl */
 	ret = gpio_ctrl(&ar0330->subdev, 1);
 	if (ret) {
 		ret = gpio_ctrl(&ar0330->subdev, 1);
 		if (ret)
-			return ret;
-			/* TODO: use this label instead later when this label added */
-			// goto fail_power;
+			goto fail_power;
 	}
 
 	/* 8192 cycles prior to first SCCB transaction */
@@ -632,6 +661,12 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 	usleep_range(delay_us, delay_us * 2);
 
 	return 0;
+
+fail_power:
+	power_ctrl(&ar0330->subdev, 0);
+	dev_err(dev, "sensor power-up failed\n");
+
+	return ret;
 }
 
 static void __ar0330_power_off(struct ar0330 *ar0330)
@@ -646,6 +681,11 @@ static void __ar0330_power_off(struct ar0330 *ar0330)
 		if (ret)
 			dev_err(&client->dev, "gpio failed 2\n");
 	}
+
+	/* power control */
+	ret = power_ctrl(&ar0330->subdev, 0);
+	if (ret)
+		dev_err(&client->dev, "vprog failed.\n");
 }
 
 static int ar0330_runtime_resume(struct device *dev)
