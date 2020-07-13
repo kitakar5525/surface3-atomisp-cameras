@@ -1794,19 +1794,7 @@ static struct i2c_driver ov8830_driver = {
 	.probe_new = ov8830_probe,
 	.remove = ov8830_remove,
 };
-
-static __init int ov8830_init_mod(void)
-{
-	return i2c_add_driver(&ov8830_driver);
-}
-
-static __exit void ov8830_exit_mod(void)
-{
-	i2c_del_driver(&ov8830_driver);
-}
-
-module_init(ov8830_init_mod);
-module_exit(ov8830_exit_mod);
+module_i2c_driver(ov8830_driver);
 
 MODULE_DESCRIPTION("A low-level driver for Omnivision OV8830 sensors");
 MODULE_LICENSE("GPL");
