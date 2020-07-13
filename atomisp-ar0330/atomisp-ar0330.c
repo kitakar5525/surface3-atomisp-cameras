@@ -6,6 +6,7 @@
  * V0.0X01.0X01 add enum_frame_interval function.
  */
 
+#include <linux/acpi.h>
 #include <linux/clk.h>
 #include <linux/device.h>
 #include <linux/delay.h>
@@ -1007,6 +1008,12 @@ static int ar0330_remove(struct i2c_client *client)
 	return 0;
 }
 
+static const struct acpi_device_id ar0330_acpi_ids[] = {
+       {"APTA0330"},
+       {},
+};
+MODULE_DEVICE_TABLE(acpi, ar0330_acpi_ids);
+
 static const struct i2c_device_id ar0330_match_id[] = {
 	{ "Aptina,ar0330", 0 },
 	{ },
@@ -1016,6 +1023,7 @@ static struct i2c_driver ar0330_i2c_driver = {
 	.driver = {
 		.name = AR0330_NAME,
 		.pm = &ar0330_pm_ops,
+		.acpi_match_table = ACPI_PTR(ar0330_acpi_ids),
 	},
 	.probe		= &ar0330_probe,
 	.remove		= &ar0330_remove,
