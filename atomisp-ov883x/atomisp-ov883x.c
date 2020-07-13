@@ -370,6 +370,30 @@ static int drv201_init(struct v4l2_subdev *sd)
 	return 0;
 }
 
+static int power_ctrl(struct v4l2_subdev *sd, bool flag)
+{
+	int ret = 0;
+	struct ov8830_device *dev = to_ov8830_sensor(sd);
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+
+	if (!dev || !dev->platform_data)
+		return -ENODEV;
+
+	dev_dbg(&client->dev, "%s: %s", __func__, flag ? "on" : "off");
+
+	if (flag) {
+		ret |= dev->platform_data->v1p8_ctrl(sd, 1);
+		ret |= dev->platform_data->v2p8_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+	}
+
+	if (!flag || ret) {
+		ret |= dev->platform_data->v1p8_ctrl(sd, 0);
+		ret |= dev->platform_data->v2p8_ctrl(sd, 0);
+	}
+	return ret;
+}
+
 static int drv201_power_up(struct v4l2_subdev *sd)
 {
 	/* Transition time required from shutdown to standby state */
@@ -381,7 +405,7 @@ static int drv201_power_up(struct v4l2_subdev *sd)
 	int r;
 
 	/* Enable power */
-	r = dev->platform_data->power_ctrl(sd, 1);
+	r = power_ctrl(sd, 1);
 	if (r)
 		return r;
 
@@ -423,15 +447,13 @@ static int drv201_power_up(struct v4l2_subdev *sd)
 	return 0;
 
 fail_powerdown:
-	dev->platform_data->power_ctrl(sd, 0);
+	power_ctrl(sd, 0);
 	return r;
 }
 
 static int drv201_power_down(struct v4l2_subdev *sd)
 {
-	struct drv201_device *dev = to_drv201_device(sd);
-
-	return dev->platform_data->power_ctrl(sd, 0);
+	return power_ctrl(sd, 0);
 }
 
 static int drv201_t_focus_abs(struct v4l2_subdev *sd, s32 value)
@@ -754,7 +776,7 @@ static int power_up(struct v4l2_subdev *sd)
 	int ret;
 
 	/* Enable power */
-	ret = dev->platform_data->power_ctrl(sd, 1);
+	ret = power_ctrl(sd, 1);
 	if (ret)
 		goto fail_power;
 
@@ -776,7 +798,7 @@ static int power_up(struct v4l2_subdev *sd)
 fail_clk:
 	dev->platform_data->flisclk_ctrl(sd, 0);
 fail_power:
-	dev->platform_data->power_ctrl(sd, 0);
+	power_ctrl(sd, 0);
 	dev_err(&client->dev, "sensor power-up failed\n");
 
 	return ret;
@@ -798,7 +820,7 @@ static int power_down(struct v4l2_subdev *sd)
 		dev_err(&client->dev, "gpio failed 1\n");
 
 	/* power control */
-	ret = dev->platform_data->power_ctrl(sd, 0);
+	ret = power_ctrl(sd, 0);
 	if (ret)
 		dev_err(&client->dev, "vprog failed.\n");
 
