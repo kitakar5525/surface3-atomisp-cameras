@@ -119,6 +119,14 @@ struct ar0330 {
 	bool				streaming;
 	bool				power_on;
 	const struct ar0330_mode *cur_mode;
+
+	struct v4l2_mbus_framefmt format;
+	struct camera_sensor_platform_data *platform_data;
+	int vt_pix_clk_freq_mhz;
+	int fmt_idx;
+	int run_mode;
+	u8 res;
+	u8 type;
 };
 
 #define to_ar0330(sd) container_of(sd, struct ar0330, subdev)
