@@ -687,6 +687,15 @@ static void __ar0330_power_off(struct ar0330 *ar0330)
 	struct i2c_client *client = v4l2_get_subdevdata(&ar0330->subdev);
 	int ret;
 
+	if (!ar0330->platform_data) {
+		dev_err(&client->dev,
+			"no camera_sensor_platform_data");
+	}
+
+	ret = ar0330->platform_data->flisclk_ctrl(&ar0330->subdev, 0);
+	if (ret)
+		dev_err(&client->dev, "flisclk failed\n");
+
 	/* gpio ctrl */
 	ret = gpio_ctrl(&ar0330->subdev, 0);
 	if (ret) {
