@@ -635,6 +635,12 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 
 	dev_info(dev, "%s(%d) enter\n", __func__, __LINE__);
 
+	if (!ar0330->platform_data) {
+		dev_err(dev,
+			"no camera_sensor_platform_data");
+		return -ENODEV;
+	}
+
 	/* TODO: original ar0330 driver turns gpio off here, really needed? */
 	ret = gpio_ctrl(&ar0330->subdev, 0);
 	if (ret)
@@ -656,12 +662,19 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 			goto fail_power;
 	}
 
+	/* flis clock control */
+	ret = ar0330->platform_data->flisclk_ctrl(&ar0330->subdev, 1);
+	if (ret)
+		goto fail_clk;
+
 	/* 8192 cycles prior to first SCCB transaction */
 	delay_us = ar0330_cal_delay(92000);
 	usleep_range(delay_us, delay_us * 2);
 
 	return 0;
 
+fail_clk:
+	gpio_ctrl(&ar0330->subdev, 0);
 fail_power:
 	power_ctrl(&ar0330->subdev, 0);
 	dev_err(dev, "sensor power-up failed\n");
