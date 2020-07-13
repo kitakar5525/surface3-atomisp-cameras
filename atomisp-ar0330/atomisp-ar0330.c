@@ -387,12 +387,7 @@ static int ar0330_set_fmt(struct v4l2_subdev *sd,
 	fmt->format.height = mode->height;
 	fmt->format.field = V4L2_FIELD_NONE;
 	if (fmt->which == V4L2_SUBDEV_FORMAT_TRY) {
-#ifdef CONFIG_VIDEO_V4L2_SUBDEV_API
 		*v4l2_subdev_get_try_format(sd, cfg, fmt->pad) = fmt->format;
-#else
-		mutex_unlock(&ar0330->mutex);
-		return -ENOTTY;
-#endif
 	} else {
 		ar0330->cur_mode = mode;
 		h_blank = mode->hts_def - mode->width;
@@ -418,12 +413,7 @@ static int ar0330_get_fmt(struct v4l2_subdev *sd,
 
 	mutex_lock(&ar0330->mutex);
 	if (fmt->which == V4L2_SUBDEV_FORMAT_TRY) {
-#ifdef CONFIG_VIDEO_V4L2_SUBDEV_API
 		fmt->format = *v4l2_subdev_get_try_format(sd, cfg, fmt->pad);
-#else
-		mutex_unlock(&ar0330->mutex);
-		return -ENOTTY;
-#endif
 	} else {
 		fmt->format.width = mode->width;
 		fmt->format.height = mode->height;
@@ -667,7 +657,6 @@ static int ar0330_runtime_suspend(struct device *dev)
 	return 0;
 }
 
-#ifdef CONFIG_VIDEO_V4L2_SUBDEV_API
 static int ar0330_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
 	struct ar0330 *ar0330 = to_ar0330(sd);
@@ -686,7 +675,6 @@ static int ar0330_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 
 	return 0;
 }
-#endif
 
 static int ar0330_enum_frame_interval(struct v4l2_subdev *sd,
 				 struct v4l2_subdev_pad_config *cfg,
@@ -709,11 +697,9 @@ static const struct dev_pm_ops ar0330_pm_ops = {
 			   ar0330_runtime_resume, NULL)
 };
 
-#ifdef CONFIG_VIDEO_V4L2_SUBDEV_API
 static const struct v4l2_subdev_internal_ops ar0330_internal_ops = {
 	.open = ar0330_open,
 };
-#endif
 
 static const struct v4l2_subdev_core_ops ar0330_core_ops = {
 	.s_power = ar0330_s_power,
@@ -960,10 +946,8 @@ static int ar0330_probe(struct i2c_client *client,
 	if (ret)
 		goto err_power_off;
 
-#ifdef CONFIG_VIDEO_V4L2_SUBDEV_API
 	sd->internal_ops = &ar0330_internal_ops;
 	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
-#endif
 #if defined(CONFIG_MEDIA_CONTROLLER)
 	ar0330->pad.flags = MEDIA_PAD_FL_SOURCE;
 	sd->entity.type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
