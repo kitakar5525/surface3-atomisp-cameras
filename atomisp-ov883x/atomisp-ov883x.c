@@ -1791,10 +1791,17 @@ static const struct i2c_device_id ov8830_id[] = {
 
 MODULE_DEVICE_TABLE(i2c, ov8830_id);
 
+static const struct acpi_device_id ov8830_acpi_ids[] = {
+       {"OVTI8835"},
+       {},
+};
+MODULE_DEVICE_TABLE(acpi, ov8830_acpi_ids);
+
 static struct i2c_driver ov8830_driver = {
 	.driver = {
 		.owner = THIS_MODULE,
 		.name = OV8830_NAME,
+		.acpi_match_table = ACPI_PTR(ov8830_acpi_ids),
 	},
 	.probe = ov8830_probe,
 	.remove = ov8830_remove,
