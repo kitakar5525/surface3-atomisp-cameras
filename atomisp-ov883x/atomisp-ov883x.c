@@ -778,6 +778,12 @@ static int power_up(struct v4l2_subdev *sd)
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	int ret;
 
+	if (!dev->platform_data) {
+		dev_err(&client->dev,
+			"no camera_sensor_platform_data");
+		return -ENODEV;
+	}
+
 	/* Enable power */
 	ret = power_ctrl(sd, 1);
 	if (ret)
