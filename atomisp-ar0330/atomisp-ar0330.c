@@ -581,7 +581,7 @@ static int gpio_ctrl(struct v4l2_subdev *sd, bool flag)
 	return ret;
 }
 
-static int __ar0330_power_on(struct ar0330 *ar0330)
+static int power_up(struct ar0330 *ar0330)
 {
 	int ret;
 	u32 delay_us;
@@ -636,7 +636,7 @@ fail_power:
 	return ret;
 }
 
-static void __ar0330_power_off(struct ar0330 *ar0330)
+static void power_down(struct ar0330 *ar0330)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(&ar0330->subdev);
 	int ret;
@@ -920,14 +920,14 @@ static int ar0330_s_config(struct v4l2_subdev *sd,
 	 * as first power on by board may not fulfill the
 	 * power on sequqence needed by the module
 	 */
-	__ar0330_power_off(dev);
-	/* TODO: make __ar0330_power_off() return value? */
+	power_down(dev);
+	/* TODO: make power_down() return value? */
 	// if (ret) {
 	// 	dev_err(&client->dev, "ar0330 power-off err.\n");
 	// 	goto fail_power_off;
 	// }
 
-	ret = __ar0330_power_on(dev);
+	ret = power_up(dev);
 	if (ret) {
 		dev_err(&client->dev, "ar0330 power-up err.\n");
 		goto fail_power_on;
@@ -946,8 +946,8 @@ static int ar0330_s_config(struct v4l2_subdev *sd,
 	}
 
 	/* turn off sensor, after probed */
-	__ar0330_power_off(dev);
-	/* TODO: make __ar0330_power_off() return value? */
+	power_down(dev);
+	/* TODO: make power_down() return value? */
 	// if (ret) {
 	// 	dev_err(&client->dev, "ar0330 power-off err.\n");
 	// 	goto fail_csi_cfg;
@@ -959,9 +959,9 @@ static int ar0330_s_config(struct v4l2_subdev *sd,
 fail_csi_cfg:
 	dev->platform_data->csi_cfg(sd, 0);
 fail_power_on:
-	__ar0330_power_off(dev);
+	power_down(dev);
 	dev_err(&client->dev, "sensor power-gating failed\n");
-/* TODO: Uncomment this once __ar0330_power_off() started returning value */
+/* TODO: Uncomment this once power_down() started returning value */
 // fail_power_off:
 	mutex_unlock(&dev->mutex);
 	return ret;
@@ -1021,7 +1021,7 @@ static int ar0330_probe(struct i2c_client *client)
 	return 0;
 
 err_power_off:
-	__ar0330_power_off(ar0330);
+	power_down(ar0330);
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
 out_free:
 	v4l2_device_unregister_subdev(sd);
@@ -1041,7 +1041,7 @@ static int ar0330_remove(struct i2c_client *client)
 
 	ar0330->platform_data->csi_cfg(sd, 0);
 
-	__ar0330_power_off(ar0330);
+	power_down(ar0330);
 
 	/* TODO: atomisp sensor drivers use v4l2_device_unregister_subdev()
 	 * instead. What's the difference? */
