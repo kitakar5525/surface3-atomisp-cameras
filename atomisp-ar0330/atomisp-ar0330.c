@@ -1021,11 +1021,6 @@ static int ar0330_probe(struct i2c_client *client,
 	if (ret)
 		goto err_destroy_mutex;
 
-	ret = __ar0330_power_on(ar0330);
-	if (ret)
-		goto err_free_handler;
-
-	usleep_range(50000, 100000);
 	ret = ar0330_check_sensor_id(ar0330, client);
 	if (ret)
 		goto err_power_off;
@@ -1056,7 +1051,6 @@ err_clean_entity:
 	media_entity_cleanup(&sd->entity);
 err_power_off:
 	__ar0330_power_off(ar0330);
-err_free_handler:
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
 err_destroy_mutex:
 	mutex_destroy(&ar0330->mutex);
