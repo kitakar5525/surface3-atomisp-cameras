@@ -66,7 +66,9 @@
 #define USE_HDR_MODE
 
 /* h_offs 35 v_offs 14 */
-#define PIX_FORMAT MEDIA_BUS_FMT_SGRBG12_1X12
+/* TODO: original ar0330 driver uses MEDIA_BUS_FMT_SGRBG12_1X12.
+ * what's the difference? */
+#define PIX_FORMAT MEDIA_BUS_FMT_SBGGR10_1X10
 
 #define AR0330_NAME			"ar0330"
 
