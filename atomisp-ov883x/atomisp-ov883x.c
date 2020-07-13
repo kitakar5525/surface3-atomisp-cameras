@@ -789,6 +789,9 @@ static int power_up(struct v4l2_subdev *sd)
 	if (ret)
 		goto fail_power;
 
+	/* add some delay; 10~11ms*/
+	usleep_range(10000, 11000);
+
 	/* Release reset */
 	ret = gpio_ctrl(sd, 1);
 	if (ret)
