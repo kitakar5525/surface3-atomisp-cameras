@@ -1139,19 +1139,7 @@ static struct i2c_driver ar0330_i2c_driver = {
 	.probe_new		= &ar0330_probe,
 	.remove		= &ar0330_remove,
 };
-
-static int __init sensor_mod_init(void)
-{
-	return i2c_add_driver(&ar0330_i2c_driver);
-}
-
-static void __exit sensor_mod_exit(void)
-{
-	i2c_del_driver(&ar0330_i2c_driver);
-}
-
-device_initcall_sync(sensor_mod_init);
-module_exit(sensor_mod_exit);
+module_i2c_driver(ar0330_i2c_driver);
 
 MODULE_DESCRIPTION("Aptina ar0330 sensor driver");
 MODULE_LICENSE("GPL v2");
