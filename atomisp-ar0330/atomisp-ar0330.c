@@ -1102,8 +1102,17 @@ static int ar0330_remove(struct i2c_client *client)
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct ar0330 *ar0330 = to_ar0330(sd);
 
-	v4l2_async_unregister_subdev(sd);
+	dev_info(&client->dev, "ar0330_remove...\n");
+
+	ar0330->platform_data->csi_cfg(sd, 0);
+
+	/* TODO: atomisp sensor drivers use v4l2_device_unregister_subdev()
+	 * instead. What's the difference? */
+	// v4l2_async_unregister_subdev(sd);
+	v4l2_device_unregister_subdev(sd);
+
 	atomisp_gmin_remove_subdev(sd);
+
 	media_entity_cleanup(&sd->entity);
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
 	mutex_destroy(&ar0330->mutex);
