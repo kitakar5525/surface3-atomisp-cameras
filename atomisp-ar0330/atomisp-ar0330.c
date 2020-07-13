@@ -1021,10 +1021,6 @@ static int ar0330_probe(struct i2c_client *client,
 	if (ret)
 		goto err_destroy_mutex;
 
-	ret = ar0330_check_sensor_id(ar0330, client);
-	if (ret)
-		goto err_power_off;
-
 	sd->internal_ops = &ar0330_internal_ops;
 	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	ar0330->pad.flags = MEDIA_PAD_FL_SOURCE;
