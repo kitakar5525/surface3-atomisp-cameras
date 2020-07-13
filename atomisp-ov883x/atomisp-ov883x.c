@@ -1758,6 +1758,7 @@ static int ov8830_remove(struct i2c_client *client)
 	v4l2_ctrl_handler_free(&dev->ctrl_handler);
 	dev->platform_data->csi_cfg(sd, 0);
 	v4l2_device_unregister_subdev(sd);
+	atomisp_gmin_remove_subdev(sd);
 	kfree(dev);
 
 	return 0;
