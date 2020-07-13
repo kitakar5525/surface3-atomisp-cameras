@@ -1002,6 +1002,7 @@ static int ar0330_probe(struct i2c_client *client,
 	struct device *dev = &client->dev;
 	struct ar0330 *ar0330;
 	struct v4l2_subdev *sd;
+	void *pdata;
 	int ret;
 
 	dev_info(dev, "wpzz driver version: %02x.%02x.%02x",
@@ -1020,6 +1021,21 @@ static int ar0330_probe(struct i2c_client *client,
 
 	sd = &ar0330->subdev;
 	v4l2_i2c_subdev_init(sd, client, &ar0330_subdev_ops);
+
+	pdata = gmin_camera_platform_data(sd,
+					  ATOMISP_INPUT_FORMAT_RAW_10,
+					  atomisp_bayer_order_bggr);
+	if (!pdata)
+		goto out_free;
+
+	ret = ar0330_s_config(sd, client->irq, pdata);
+	if (ret)
+		goto out_free;
+
+	ret = atomisp_register_i2c_module(sd, pdata, RAW_CAMERA);
+	if (ret)
+		goto out_free;
+
 	ret = ar0330_initialize_controls(ar0330);
 	if (ret)
 		goto err_destroy_mutex;
