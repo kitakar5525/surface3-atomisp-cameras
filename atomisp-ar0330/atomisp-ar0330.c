@@ -948,13 +948,11 @@ static int ar0330_probe(struct i2c_client *client,
 
 	sd->internal_ops = &ar0330_internal_ops;
 	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
-#if defined(CONFIG_MEDIA_CONTROLLER)
 	ar0330->pad.flags = MEDIA_PAD_FL_SOURCE;
 	sd->entity.type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
 	ret = media_entity_init(&sd->entity, 1, &ar0330->pad, 0);
 	if (ret < 0)
 		goto err_power_off;
-#endif
 
 	snprintf(sd->name, sizeof(sd->name), "%s %s",
 		 AR0330_NAME, dev_name(sd->dev));
@@ -971,9 +969,7 @@ static int ar0330_probe(struct i2c_client *client,
 	return 0;
 
 err_clean_entity:
-#if defined(CONFIG_MEDIA_CONTROLLER)
 	media_entity_cleanup(&sd->entity);
-#endif
 err_power_off:
 	__ar0330_power_off(ar0330);
 err_free_handler:
@@ -990,9 +986,7 @@ static int ar0330_remove(struct i2c_client *client)
 	struct ar0330 *ar0330 = to_ar0330(sd);
 
 	v4l2_async_unregister_subdev(sd);
-#if defined(CONFIG_MEDIA_CONTROLLER)
 	media_entity_cleanup(&sd->entity);
-#endif
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
 	mutex_destroy(&ar0330->mutex);
 
