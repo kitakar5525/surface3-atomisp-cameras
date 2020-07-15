@@ -1,0 +1,97 @@
+From 8cef07555fb4c938facea4b637b88a1c878ace98 Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Wed, 15 Jul 2020 18:38:01 +0900
+Subject: [PATCH 1/2] atomisp: ISP2401: fix vfree of bogus data on unload
+
+Signed-off-by: Alan Cox <alan@xxxxxxxxxxxxxxx>
+
+(patch from here:
+- https://github.com/croutor/atomisp2401/blob/1f43922051e1d9b5b503ebc3c2ccac5cfab04975/0008-atomisp_ISP2401_fix_vfree_of_bogus_data_on_unload.patch)
+[Unloading firmware (both via driver unload or css init failure) often
+causes kernel oops (and in the worst case, NULL pointer dereference),
+observed on Surface 3 (Cherry Trail):
+
+    [  109.680045] kernel: atomisp-isp2 0000:00:03.0: detected 2 camera sensors
+    [  109.680075] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOM ISP CSI2-port0 was not initialized!
+    [  109.680085] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOM ISP CSI2-port1 was not initialized!
+    [  109.680095] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOM ISP CSI2-port2 was not initialized!
+    [  109.680105] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity file_input_subdev was not initialized!
+    [  109.680115] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity tpg_subdev was not initialized!
+    [  109.680123] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOMISP_SUBDEV_0 was not initialized!
+    [  109.683154] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOMISP_SUBDEV_1 was not initialized!
+    [  109.692071] kernel: atomisp-isp2 0000:00:03.0: Firmware version may not be compatible with this driver
+    [  109.692076] kernel: atomisp-isp2 0000:00:03.0: Expecting version 'irci_ecr - master_20150911_0724', but firmware is 'irci_stable_candrpv_0415_20150521_0458'.
+    [  109.732304] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  109.768192] kernel: ------------[ cut here ]------------
+    [  109.768200] kernel: Trying to vfree() bad address (00000000075815af)
+    [  109.768226] kernel: WARNING: CPU: 0 PID: 2800 at mm/vmalloc.c:2278 __vunmap+0x263/0x270
+    [  109.768228] kernel: Modules linked in: atomisp(COE) atomisp_ov883x(OE) atomisp_ar0330(OE) atomisp_gmin_platform(COE) usb_storage fuse rfcomm cmac algif_hash algif_skcipher af_alg bnep cdc_mbim cdc_wdm input_leds cdc_ncm btusb usbnet btrtl btbcm btintel mii bluetooth ecdh_generic ecc msr zram hid_sensor_rotation hid_sensor_accel_3d hid_sensor_gyro_3d hid_sensor_als hid_sensor_trigger industrialio_triggered_buffer kfifo_buf hid_sensor_iio_common industrialio ofpart cmdlinepart intel_spi_platform snd_soc_sst_cht_bsw_rt5645 intel_spi joydev spi_nor mei_hdcp mwifiex_pcie mousedev intel_rapl_msr mwifiex mtd iTCO_wdt snd_soc_rt5670 snd_soc_rt5651 iTCO_vendor_support hid_sensor_hub intel_powerclamp coretemp battery gpio_keys kvm_intel surface3_wmi kvm nls_iso8859_1 nls_cp437 vfat fat irqbypass snd_intel_sst_acpi snd_intel_sst_core crct10dif_pclmul crc32_pclmul ghash_clmulni_intel snd_soc_rt5645 cfg80211 aesni_intel snd_soc_sst_atom_hifi2_platform snd_soc_rt5640 crypto_simd videobuf_vmalloc videobuf_core
+    [  109.768291] kernel:  cryptd glue_helper snd_soc_acpi_intel_match snd_soc_rl6231 snd_soc_acpi pcspkr intel_cstate snd_soc_core videodev tpm_crb processor_thermal_device mei_txe rfkill snd_compress snd_hdmi_lpe_audio intel_rapl_common ac97_bus intel_xhci_usb_role_switch snd_pcm_dmaengine roles intel_soc_dts_iosf mc tpm_tis mei lpc_ich soc_button_array surface3_spi snd_pcm snd_timer tpm_tis_core i2c_hid int3400_thermal snd tpm spi_pxa2xx_platform soundcore dptf_power 8250_dw pwm_lpss_platform evdev acpi_thermal_rel surfacepro3_button pwm_lpss intel_int0002_vgpio mac_hid rng_core surface3_button surface3_power wmi int3403_thermal int340x_thermal_zone ac sg crypto_user acpi_call(OE) ip_tables x_tables hid_multitouch ext4 hid_generic crc32c_generic crc16 mbcache usbhid jbd2 hid mmc_block crc32c_intel xhci_pci xhci_hcd sdhci_acpi sdhci mmc_core i915 i2c_algo_bit drm_kms_helper syscopyarea sysfillrect sysimgblt fb_sys_fops cec rc_core drm intel_agp intel_gtt agpgart
+    [  109.768363] kernel: CPU: 0 PID: 2800 Comm: v4l_id Tainted: G        WC OE     5.8.0-rc5-1-surface-mainline #1
+    [  109.768364] kernel: Hardware name: OEMB OEMB/OEMB, BIOS 1.51116.238 03/09/2015
+    [  109.768368] kernel: RIP: 0010:__vunmap+0x263/0x270
+    [  109.768372] kernel: Code: 80 3d b4 fa 2e 01 00 74 b3 31 d2 31 f6 48 c7 c7 ff ff ff ff e8 9e c7 ff ff eb a1 48 89 fe 48 c7 c7 b0 0b 35 a2 e8 e3 9b e1 ff <0f> 0b e9 07 fe ff ff c3 0f 1f 44 00 00 0f 1f 44 00 00 53 31 db 48
+    [  109.768373] kernel: RSP: 0018:ffffbf44406e3bc0 EFLAGS: 00010282
+    [  109.768376] kernel: RAX: 0000000000000000 RBX: 0000000000000010 RCX: 0000000000000000
+    [  109.768378] kernel: RDX: 0000000000000001 RSI: ffffffffa233fb87 RDI: 00000000ffffffff
+    [  109.768380] kernel: RBP: 0000000000000c00 R08: 00000000000003c8 R09: 0000000000000001
+    [  109.768381] kernel: R10: 0000000000000000 R11: 0000000000000001 R12: ffff9fc065500fc8
+    [  109.768383] kernel: R13: ffff9fc124949c00 R14: ffff9fc065500018 R15: ffff9fc12c3e4f78
+    [  109.768386] kernel: FS:  00007f1a220f8a80(0000) GS:ffff9fc13a800000(0000) knlGS:0000000000000000
+    [  109.768388] kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+    [  109.768390] kernel: CR2: 000055b7427ef000 CR3: 000000006559a000 CR4: 00000000001006f0
+    [  109.768392] kernel: Call Trace:
+    [  109.768452] kernel:  sh_css_unload_firmware+0x55/0xb0 [atomisp]
+    [  109.768482] kernel:  ia_css_uninit+0x80/0x90 [atomisp]
+    [  109.768510] kernel:  atomisp_open+0x501/0x5c0 [atomisp]
+    [  109.768534] kernel:  v4l2_open+0x85/0xf0 [videodev]
+    [  109.768540] kernel:  chrdev_open+0xca/0x240
+    [  109.768544] kernel:  ? cdev_device_add+0x90/0x90
+    [  109.768548] kernel:  do_dentry_open+0x159/0x3d0
+    [  109.768553] kernel:  path_openat+0xc5e/0x10f0
+    [  109.768559] kernel:  ? sched_clock+0x5/0x10
+    [  109.768563] kernel:  ? sched_clock_cpu+0xe/0xd0
+    [  109.768566] kernel:  ? irqtime_account_irq+0x90/0xc0
+    [  109.768570] kernel:  do_filp_open+0x9c/0x140
+    [  109.768577] kernel:  do_sys_openat2+0xbb/0x170
+    [  109.768581] kernel:  __x64_sys_openat+0x54/0x90
+    [  109.768587] kernel:  do_syscall_64+0x44/0x70
+    [  109.768592] kernel:  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+    [  109.768596] kernel: RIP: 0033:0x7f1a2305e80b
+    [  109.768598] kernel: Code: Bad RIP value.
+    [  109.768599] kernel: RSP: 002b:00007ffd1c91f3d0 EFLAGS: 00000246 ORIG_RAX: 0000000000000101
+    [  109.768602] kernel: RAX: ffffffffffffffda RBX: 00007ffd1c91f5c8 RCX: 00007f1a2305e80b
+    [  109.768603] kernel: RDX: 0000000000000000 RSI: 00007ffd1c920f2e RDI: 00000000ffffff9c
+    [  109.768605] kernel: RBP: 00007ffd1c920f2e R08: 0000000000000000 R09: 0000000000000000
+    [  109.768606] kernel: R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000000
+    [  109.768607] kernel: R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+    [  109.768613] kernel: ---[ end trace 6c0b5b0559d5e430 ]---
+    [  109.768617] kernel: ------------[ cut here ]------------
+    [...]
+
+(Note that the DMI table is broken and shown as "Hardware name:
+OEMB OEMB/OEMB")
+
+It seems that applying this patch fixes the oops.]
+[Resolved path change.]
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+---
+ drivers/staging/media/atomisp/pci/sh_css_firmware.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/staging/media/atomisp/pci/sh_css_firmware.c b/drivers/staging/media/atomisp/pci/sh_css_firmware.c
+index d4ab15b6d1ac..0573f4efaa86 100644
+--- a/drivers/staging/media/atomisp/pci/sh_css_firmware.c
++++ b/drivers/staging/media/atomisp/pci/sh_css_firmware.c
+@@ -357,8 +357,6 @@ void sh_css_unload_firmware(void)
+ 		for (i = 0; i < sh_css_num_binaries; i++) {
+ 			if (fw_minibuffer[i].name)
+ 				kfree((void *)fw_minibuffer[i].name);
+-			if (fw_minibuffer[i].buffer)
+-				vfree((void *)fw_minibuffer[i].buffer);
+ 		}
+ 		kfree(fw_minibuffer);
+ 		fw_minibuffer = NULL;
+-- 
+2.27.0
+
