@@ -1,7 +1,7 @@
-From 29b68be78989de73dddc08a8668271846d0c8b03 Mon Sep 17 00:00:00 2001
+From abedc2f129529592141d0c3c9dd9d7e65fbb8d96 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 28 Jun 2020 13:12:31 +0900
-Subject: [PATCH 3/6] intel_pmic: add parameter override_pmic_i2c_address
+Subject: [PATCH 3/7] intel_pmic: add parameter override_pmic_i2c_address
 
 On Surface 3, when executing intel_soc_pmic_exec_mipi_pmic_seq_element(),
 I recieve the following error:
