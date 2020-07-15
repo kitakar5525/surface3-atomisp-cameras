@@ -18,3 +18,6 @@ You can find atomisp and its sensor drivers for Android (kernel 3.10) on some pl
 
 Linux kernel for intel-aero also provides atomisp and its sensor drivers (up to linux 4.4):
 - https://github.com/intel-aero/linux-kernel/tree/aero-4.4.x
+
+atomisp and its sensor drivers as patch format for Linux v4.4 and atomisp firmware file (place it to /lib/firmware):
+- https://github.com/intel-aero/meta-intel-aero-base/tree/master/recipes-kernel/linux/linux-yocto
