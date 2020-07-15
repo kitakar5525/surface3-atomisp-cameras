@@ -1,0 +1,122 @@
+From 6f73e9668e0e3dbec039d0d9617f86c4583d6212 Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Wed, 15 Jul 2020 18:38:01 +0900
+Subject: [PATCH 2/2] atomisp: ISP2401: fix up the open_v load race
+
+Signed-off-by: Alan Cox <alan@xxxxxxxxxxxxxxx>
+
+(patch from here:
+- https://github.com/croutor/atomisp2401/blob/1f43922051e1d9b5b503ebc3c2ccac5cfab04975/0007-atomisp_ISP2401_fix_up_the_open_v_load_race.patch)
+[Surface 3 (Cherry Trail) often fails to init css:
+
+    [  110.077904] kernel: atomisp-isp2 0000:00:03.0: detected 2 camera sensors
+    [  110.077922] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOM ISP CSI2-port0 was not initialized!
+    [  110.077931] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOM ISP CSI2-port1 was not initialized!
+    [  110.077936] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOM ISP CSI2-port2 was not initialized!
+    [  110.077941] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity file_input_subdev was not initialized!
+    [  110.077945] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity tpg_subdev was not initialized!
+    [  110.077962] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOMISP_SUBDEV_0 was not initialized!
+    [  110.087433] kernel: atomisp-isp2 0000:00:03.0: Entity type for entity ATOMISP_SUBDEV_1 was not initialized!
+    [  110.089568] kernel: atomisp-isp2 0000:00:03.0: Firmware version may not be compatible with this driver
+    [  110.089574] kernel: atomisp-isp2 0000:00:03.0: Expecting version 'irci_ecr - master_20150911_0724', but firmware is 'irci_stable_candrpv_0415_20150521_0458'.
+    [  110.141474] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.184343] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.185494] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.186844] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.188250] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.203564] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.220968] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.249973] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.258324] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.265453] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+    [  110.266331] kernel: atomisp-isp2 0000:00:03.0: css init failed --- bad firmware?
+
+It seems that applying this patch fixes the initialization.]
+[Resolved path change]
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+---
+ drivers/staging/media/atomisp/pci/atomisp_fops.c     | 12 ++++++++++++
+ drivers/staging/media/atomisp/pci/atomisp_internal.h |  5 +++++
+ drivers/staging/media/atomisp/pci/atomisp_v4l2.c     |  6 ++++++
+ 3 files changed, 23 insertions(+)
+
+diff --git a/drivers/staging/media/atomisp/pci/atomisp_fops.c b/drivers/staging/media/atomisp/pci/atomisp_fops.c
+index 453bb6913550..434cd85125ec 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp_fops.c
++++ b/drivers/staging/media/atomisp/pci/atomisp_fops.c
+@@ -769,6 +769,18 @@ static int atomisp_open(struct file *file)
+ 
+ 	dev_dbg(isp->dev, "open device %s\n", vdev->name);
+ 
++	/* Ensure that if we are still loading we block. Once the loading
++	   is over we can proceed. We can't blindly hold the lock until
++	   that occurs as if the load fails we'll deadlock the unload */
++	rt_mutex_lock(&isp->loading);
++	/* Revisit this with a better check once the code structure is
++	   cleaned up a bit more FIXME */
++	if (!isp->ready) {
++		rt_mutex_unlock(&isp->loading);
++		return -ENXIO;
++	}
++	rt_mutex_unlock(&isp->loading);
++
+ 	rt_mutex_lock(&isp->mutex);
+ 
+ 	acc_node = !strcmp(vdev->name, "ATOMISP ISP ACC");
+diff --git a/drivers/staging/media/atomisp/pci/atomisp_internal.h b/drivers/staging/media/atomisp/pci/atomisp_internal.h
+index c01db10bb735..356a7f1bb757 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp_internal.h
++++ b/drivers/staging/media/atomisp/pci/atomisp_internal.h
+@@ -246,6 +246,11 @@ struct atomisp_device {
+ 	/* Purpose of mutex is to protect and serialize use of isp data
+ 	 * structures and css API calls. */
+ 	struct rt_mutex mutex;
++	/* This mutex ensures that we don't allow an open to succeed while
++	 * the initialization process is incomplete */
++	struct rt_mutex loading;
++	/* Set once the ISP is ready to allow opens */
++	bool ready;
+ 	/*
+ 	 * Serialise streamoff: mutex is dropped during streamoff to
+ 	 * cancel the watchdog queue. MUST be acquired BEFORE
+diff --git a/drivers/staging/media/atomisp/pci/atomisp_v4l2.c b/drivers/staging/media/atomisp/pci/atomisp_v4l2.c
+index 17ca730aa358..536ebd7ca745 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp_v4l2.c
++++ b/drivers/staging/media/atomisp/pci/atomisp_v4l2.c
+@@ -1571,6 +1571,7 @@ static int atomisp_pci_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ 	dev_dbg(&pdev->dev, "atomisp mmio base: %p\n", isp->base);
+ 
+ 	rt_mutex_init(&isp->mutex);
++	rt_mutex_init(&isp->loading);
+ 	mutex_init(&isp->streamoff_mutex);
+ 	spin_lock_init(&isp->lock);
+ 
+@@ -1753,6 +1754,8 @@ static int atomisp_pci_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ 		pci_write_config_dword(pdev, MRFLD_PCI_CSI_AFE_TRIM_CONTROL, csi_afe_trim);
+ 	}
+ 
++	rt_mutex_lock(&isp->loading);
++
+ 	err = atomisp_initialize_modules(isp);
+ 	if (err < 0) {
+ 		dev_err(&pdev->dev, "atomisp_initialize_modules (%d)\n", err);
+@@ -1809,6 +1812,8 @@ static int atomisp_pci_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ 	release_firmware(isp->firmware);
+ 	isp->firmware = NULL;
+ 	isp->css_env.isp_css_fw.data = NULL;
++	isp->ready = true;
++	rt_mutex_unlock(&isp->loading);
+ 
+ 	atomisp_drvfs_init(isp);
+ 
+@@ -1827,6 +1832,7 @@ static int atomisp_pci_probe(struct pci_dev *pdev, const struct pci_device_id *i
+ register_entities_fail:
+ 	atomisp_uninitialize_modules(isp);
+ initialize_modules_fail:
++	rt_mutex_unlock(&isp->loading);
+ 	cpu_latency_qos_remove_request(&isp->pm_qos);
+ 	atomisp_msi_irq_uninit(isp);
+ 	pci_disable_msi(pdev);
+-- 
+2.27.0
+
