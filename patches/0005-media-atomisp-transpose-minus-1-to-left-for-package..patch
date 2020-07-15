@@ -1,7 +1,7 @@
-From 09083f6f123bbbc870819f0f54bb9ae926a26069 Mon Sep 17 00:00:00 2001
+From 31e7965bbd98c3ac5b72483efb39e18f067e4c45 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Fri, 26 Jun 2020 12:33:45 +0900
-Subject: [PATCH 5/6] media: atomisp: transpose minus 1 to left for
+Subject: [PATCH 5/7] media: atomisp: transpose minus 1 to left for
  package.count
 
 When package.count is zero (observed on Surface 3 before, take a look

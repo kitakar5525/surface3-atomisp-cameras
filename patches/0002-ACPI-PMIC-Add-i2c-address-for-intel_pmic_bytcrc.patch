@@ -1,7 +1,7 @@
-From 798259a5030550af52e2bcee320e0b9bc198b7e3 Mon Sep 17 00:00:00 2001
+From 00cb2430d54f7c359d5cbf43ba9cce230fc5c9fe Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Mon, 13 Jul 2020 11:02:08 +0900
-Subject: [PATCH 2/6] ACPI / PMIC: Add i2c address for intel_pmic_bytcrc
+Subject: [PATCH 2/7] ACPI / PMIC: Add i2c address for intel_pmic_bytcrc
 
 On Surface 3, when executing intel_soc_pmic_exec_mipi_pmic_seq_element(),
 I recieve the following error:
