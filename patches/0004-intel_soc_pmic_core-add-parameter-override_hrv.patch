@@ -1,7 +1,7 @@
-From 97a2bac960a251e56ba2906bcb4860cb3c6590de Mon Sep 17 00:00:00 2001
+From 424c4cac8c00b4e9a8a74eb2f1a56ebe95e48e6c Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 28 Jun 2020 14:49:25 +0900
-Subject: [PATCH 4/6] intel_soc_pmic_core: add parameter override_hrv
+Subject: [PATCH 4/7] intel_soc_pmic_core: add parameter override_hrv
 
 On Surface 3, when executing intel_soc_pmic_exec_mipi_pmic_seq_element(),
 I recieve the following error:

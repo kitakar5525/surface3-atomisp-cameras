@@ -1,7 +1,7 @@
-From 09e5f4970ea0c30e02ef8bc24eca727d5dd6fe90 Mon Sep 17 00:00:00 2001
+From 17410ddc2991ae8b71d81ae69eb6bde0d8ec1805 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sat, 27 Jun 2020 13:07:08 +0900
-Subject: [PATCH 6/6] media: atomsip: add (guessed) platform data for Surface 3
+Subject: [PATCH 6/7] media: atomsip: add (guessed) platform data for Surface 3
 
 FIXME: CsiPort and CsiLanes are necessary values for atomisp to work,
 but currently those are unknown. I wrote guessed values.

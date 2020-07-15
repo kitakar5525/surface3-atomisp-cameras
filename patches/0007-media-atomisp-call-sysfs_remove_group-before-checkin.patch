@@ -1,0 +1,86 @@
+From 2869542ed20dbf4891d5a816ce596be7d5d6e266 Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Wed, 15 Jul 2020 19:27:14 +0900
+Subject: [PATCH 7/7] media: atomisp: call sysfs_remove_group() before checking
+ dummy_ptr
+
+Sometimes "!dummy_ptr" is true although it doesn't seem to be NULL (why?).
+When this happens, current driver aborts hmm_cleanup() without calling
+sysfs_remove_group(). It results in sysfs_create_group() failing on next
+driver load:
+
+    [  350.412835] kernel: sysfs: cannot create duplicate filename '/devices/pci0000:00/0000:00:03.0/active_bo'
+    [  350.412846] kernel: CPU: 3 PID: 3974 Comm: insmod Tainted: G        WC OE     5.8.0-rc5-1-surface-mainline #1
+    [  350.412847] kernel: Hardware name: OEMB OEMB/OEMB, BIOS 1.51116.238 03/09/2015
+    [  350.412849] kernel: Call Trace:
+    [  350.412868] kernel:  dump_stack+0x6b/0x88
+    [  350.412881] kernel:  sysfs_warn_dup.cold+0x17/0x2d
+    [  350.412885] kernel:  sysfs_add_file_mode_ns+0x161/0x170
+    [  350.412889] kernel:  internal_create_group+0x126/0x390
+    [  350.412952] kernel:  hmm_init+0x5c/0x70 [atomisp]
+    [  350.412989] kernel:  atomisp_pci_probe.cold+0x1324/0x141c [atomisp]
+    [  350.413009] kernel:  local_pci_probe+0x42/0x80
+    [  350.413013] kernel:  ? pci_match_device+0xd7/0x100
+    [  350.413016] kernel:  pci_device_probe+0xfa/0x1b0
+    [  350.413022] kernel:  really_probe+0x167/0x410
+    [  350.413027] kernel:  driver_probe_device+0xe1/0x150
+    [  350.413030] kernel:  device_driver_attach+0xa1/0xb0
+    [  350.413033] kernel:  __driver_attach+0x8a/0x150
+    [  350.413036] kernel:  ? device_driver_attach+0xb0/0xb0
+    [  350.413038] kernel:  ? device_driver_attach+0xb0/0xb0
+    [  350.413041] kernel:  bus_for_each_dev+0x89/0xd0
+    [  350.413045] kernel:  bus_add_driver+0x12b/0x1e0
+    [  350.413049] kernel:  driver_register+0x8b/0xe0
+    [  350.413054] kernel:  ? 0xffffffffc0f82000
+    [  350.413059] kernel:  do_one_initcall+0x59/0x240
+    [  350.413066] kernel:  do_init_module+0x5c/0x260
+    [  350.413070] kernel:  load_module+0x21a5/0x2450
+    [  350.413079] kernel:  __do_sys_finit_module+0xbd/0x120
+    [  350.413088] kernel:  do_syscall_64+0x44/0x70
+    [  350.413092] kernel:  entry_SYSCALL_64_after_hwframe+0x44/0xa9
+    [  350.413096] kernel: RIP: 0033:0x7f40ef61471d
+    [  350.413098] kernel: Code: Bad RIP value.
+    [  350.413100] kernel: RSP: 002b:00007ffc5d6c6c78 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+    [  350.413103] kernel: RAX: ffffffffffffffda RBX: 000055b5cda9d7f0 RCX: 00007f40ef61471d
+    [  350.413105] kernel: RDX: 0000000000000000 RSI: 000055b5cbcaa368 RDI: 0000000000000003
+    [  350.413106] kernel: RBP: 0000000000000000 R08: 0000000000000000 R09: 00007f40ef6de4a0
+    [  350.413108] kernel: R10: 0000000000000003 R11: 0000000000000246 R12: 000055b5cbcaa368
+    [  350.413109] kernel: R13: 0000000000000000 R14: 000055b5cdaa03e0 R15: 0000000000000000
+    [  350.413157] kernel: atomisp-isp2 0000:00:03.0: hmm_init Failed to create sysfs
+
+This commit calls sysfs_remove_group() before checking dummy_ptr.
+
+Also adds print output when "!dummy_ptr" is true.
+
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+---
+ drivers/staging/media/atomisp/pci/hmm/hmm.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/media/atomisp/pci/hmm/hmm.c b/drivers/staging/media/atomisp/pci/hmm/hmm.c
+index 42fef1779862..a310c5e3bde6 100644
+--- a/drivers/staging/media/atomisp/pci/hmm/hmm.c
++++ b/drivers/staging/media/atomisp/pci/hmm/hmm.c
+@@ -209,10 +209,17 @@ int hmm_init(void)
+ 
+ void hmm_cleanup(void)
+ {
+-	if (!dummy_ptr)
+-		return;
++	/* FIXME: Sometimes "!dummy_ptr" is true although it doesn't seem
++	 * to be NULL (why?). So, call this first. */
+ 	sysfs_remove_group(&atomisp_dev->kobj, atomisp_attribute_group);
+ 
++	if (!dummy_ptr) {
++		dev_warn(atomisp_dev,
++				"%s: '!dummy_ptr' is true. aborting cleanup.\n",
++				__func__);
++		return;
++	}
++
+ 	/* free dummy memory first */
+ 	hmm_free(dummy_ptr);
+ 	dummy_ptr = 0;
+-- 
+2.27.0
+
