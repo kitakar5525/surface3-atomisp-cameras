@@ -7,7 +7,6 @@
  */
 
 #include <linux/acpi.h>
-#include <linux/clk.h>
 #include <linux/device.h>
 #include <linux/delay.h>
 #include <linux/gpio/consumer.h>
@@ -103,7 +102,6 @@ struct ar0330_mode {
 
 struct ar0330 {
 	struct i2c_client	*client;
-	struct clk			*xvclk;
 	struct gpio_desc	*reset_gpio;
 	struct gpio_desc	*pwdn_gpio;
 	struct regulator_bulk_data supplies[AR0330_NUM_SUPPLIES];
@@ -593,21 +591,6 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 	struct device *dev = &ar0330->client->dev;
 
 	dev_info(dev, "%s(%d) enter\n", __func__, __LINE__);
-	ret = clk_set_rate(ar0330->xvclk, AR0330_XVCLK_FREQ);
-	if (ret < 0) {
-		dev_err(dev, "Failed to set xvclk rate (%d)\n",
-			AR0330_XVCLK_FREQ);
-		return ret;
-	}
-	if (clk_get_rate(ar0330->xvclk) != AR0330_XVCLK_FREQ)
-		dev_warn(dev, "xvclk mismatched, modes are based on %d\n",
-			AR0330_XVCLK_FREQ);
-
-	ret = clk_prepare_enable(ar0330->xvclk);
-	if (ret < 0) {
-		dev_err(dev, "Failed to enable xvclk\n");
-		return ret;
-	}
 
 	if (!IS_ERR(ar0330->reset_gpio))
 		gpiod_set_value_cansleep(ar0330->reset_gpio, 0);
@@ -616,7 +599,7 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 	usleep_range(20000, 50000);
 	if (ret < 0) {
 		dev_err(dev, "Failed to enable regulators\n");
-		goto disable_clk;
+		return ret;
 	}
 
 	if (!IS_ERR(ar0330->reset_gpio))
@@ -630,18 +613,12 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 	usleep_range(delay_us, delay_us * 2);
 
 	return 0;
-
-disable_clk:
-	clk_disable_unprepare(ar0330->xvclk);
-
-	return ret;
 }
 
 static void __ar0330_power_off(struct ar0330 *ar0330)
 {
 	if (!IS_ERR(ar0330->pwdn_gpio))
 		gpiod_set_value_cansleep(ar0330->pwdn_gpio, 0);
-	clk_disable_unprepare(ar0330->xvclk);
 	if (!IS_ERR(ar0330->reset_gpio))
 		gpiod_set_value_cansleep(ar0330->reset_gpio, 1);
 	regulator_bulk_disable(AR0330_NUM_SUPPLIES, ar0330->supplies);
@@ -918,12 +895,6 @@ static int ar0330_probe(struct i2c_client *client,
 
 	ar0330->client = client;
 	ar0330->cur_mode = &supported_modes[0];
-
-	ar0330->xvclk = devm_clk_get(dev, "xvclk");
-	if (IS_ERR(ar0330->xvclk)) {
-		dev_err(dev, "Failed to get xvclk\n");
-		return -EINVAL;
-	}
 
 	ar0330->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(ar0330->reset_gpio))
