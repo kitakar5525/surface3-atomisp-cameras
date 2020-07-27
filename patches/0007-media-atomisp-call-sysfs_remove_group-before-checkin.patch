@@ -1,11 +1,11 @@
-From 2869542ed20dbf4891d5a816ce596be7d5d6e266 Mon Sep 17 00:00:00 2001
+From de35585965724c7ba08485f973ae142ed35adfcd Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Wed, 15 Jul 2020 19:27:14 +0900
 Subject: [PATCH 7/7] media: atomisp: call sysfs_remove_group() before checking
  dummy_ptr
 
 Sometimes "!dummy_ptr" is true although it doesn't seem to be NULL (why?).
-When this happens, current driver aborts hmm_cleanup() without calling
+When this happens, current driver skips hmm_cleanup() without calling
 sysfs_remove_group(). It results in sysfs_create_group() failing on next
 driver load:
 
@@ -58,7 +58,7 @@ Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
  1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/staging/media/atomisp/pci/hmm/hmm.c b/drivers/staging/media/atomisp/pci/hmm/hmm.c
-index 42fef1779862..a310c5e3bde6 100644
+index 2bd39b4939f16..dd6bb1fd8e7d4 100644
 --- a/drivers/staging/media/atomisp/pci/hmm/hmm.c
 +++ b/drivers/staging/media/atomisp/pci/hmm/hmm.c
 @@ -209,10 +209,17 @@ int hmm_init(void)
@@ -73,7 +73,7 @@ index 42fef1779862..a310c5e3bde6 100644
  
 +	if (!dummy_ptr) {
 +		dev_warn(atomisp_dev,
-+				"%s: '!dummy_ptr' is true. aborting cleanup.\n",
++				"%s: '!dummy_ptr' is true. skipping further cleanups.\n",
 +				__func__);
 +		return;
 +	}

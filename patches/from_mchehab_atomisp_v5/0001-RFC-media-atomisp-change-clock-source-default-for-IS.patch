@@ -1,0 +1,51 @@
+From f96e21374a57f68b9aa0203c44b7d8021c98a43a Mon Sep 17 00:00:00 2001
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Fri, 12 Jun 2020 08:05:09 +0200
+Subject: [PATCH] RFC: media: atomisp: change clock source default for ISP2401
+
+There's a notice there stating that the PLL is not reliable
+for CHT. Yet, it tries to read it via the BIOS. Well,
+this will fail (at least with the devices I checked the
+DSDT tables). So, change the logic in a way that it will
+change the default, depending on the ISP version.
+
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+
+[Rebased on top of v5.8-rc7]
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+---
+ .../media/atomisp/pci/atomisp_gmin_platform.c   | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
+index 0df46a1af5f0a..f4cf446f16125 100644
+--- a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
++++ b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
+@@ -521,9 +521,22 @@ static int gmin_subdev_add(struct gmin_subdev *gs)
+ 
+ 	dev_info(dev, "%s: ACPI path is %pfw\n", __func__, dev_fwnode(dev));
+ 
+-	/*WA:CHT requires XTAL clock as PLL is not stable.*/
++	/*
++	 * FIXME:
++	 * 	WA:CHT requires XTAL clock as PLL is not stable.
++	 *
++	 * However, such data doesn't seem to be present at the _DSM
++	 * table under the GUID dc2f6c4f-045b-4f1d-97b9-882a6860a4be.
++	 * So, let's change the default according with the ISP version,
++	 * but allowing it to be overridden by BIOS or by DMI match tables.
++	 */
++	if (IS_ISP2401)
++		gs->clock_src = VLV2_CLK_XTAL_25_0MHz;
++	else
++		gs->clock_src = VLV2_CLK_PLL_19P2MHZ;
++
+ 	gs->clock_src = gmin_get_var_int(dev, false, "ClkSrc",
+-				         VLV2_CLK_PLL_19P2MHZ);
++				         gs->clock_src);
+ 
+ 	gs->csi_port = gmin_get_var_int(dev, false, "CsiPort", 0);
+ 	gs->csi_lanes = gmin_get_var_int(dev, false, "CsiLanes", 1);
+-- 
+2.27.0
+

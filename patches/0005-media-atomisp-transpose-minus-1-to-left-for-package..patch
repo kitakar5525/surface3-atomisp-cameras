@@ -1,4 +1,4 @@
-From 31e7965bbd98c3ac5b72483efb39e18f067e4c45 Mon Sep 17 00:00:00 2001
+From bf6be4d592a80bf6f1ae1bbd288fea7ff43cdb99 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Fri, 26 Jun 2020 12:33:45 +0900
 Subject: [PATCH 5/7] media: atomisp: transpose minus 1 to left for
@@ -34,7 +34,7 @@ Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
-index 63a812ac2b43..3e17e296e68b 100644
+index f4cf446f16125..7ec805c83ab1f 100644
 --- a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
 +++ b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
 @@ -1158,7 +1158,7 @@ static int gmin_get_config_dsm_var(struct device *dev,

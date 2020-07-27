@@ -1,4 +1,4 @@
-From 5afe77a780ec343d4ebe4d9a49202bb36f2acd19 Mon Sep 17 00:00:00 2001
+From 2850903e193ca85833d07608489badac3954560c Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 28 Jun 2020 14:08:10 +0900
 Subject: [PATCH 1/7] DEBUG: intel_pmic: print what driver is used for pmic
@@ -15,7 +15,7 @@ Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
  7 files changed, 38 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/acpi/pmic/intel_pmic_bxtwc.c b/drivers/acpi/pmic/intel_pmic_bxtwc.c
-index bd7621edd60b..bf29720500b8 100644
+index bd7621edd60b9..bf29720500b8e 100644
 --- a/drivers/acpi/pmic/intel_pmic_bxtwc.c
 +++ b/drivers/acpi/pmic/intel_pmic_bxtwc.c
 @@ -385,11 +385,17 @@ static struct intel_pmic_opregion_data intel_bxtwc_pmic_opregion_data = {
@@ -38,7 +38,7 @@ index bd7621edd60b..bf29720500b8 100644
  
  static const struct platform_device_id bxt_wc_opregion_id_table[] = {
 diff --git a/drivers/acpi/pmic/intel_pmic_bytcrc.c b/drivers/acpi/pmic/intel_pmic_bytcrc.c
-index 2a692cc4b7ae..f2cdb5e4704c 100644
+index 2a692cc4b7ae6..f2cdb5e4704cf 100644
 --- a/drivers/acpi/pmic/intel_pmic_bytcrc.c
 +++ b/drivers/acpi/pmic/intel_pmic_bytcrc.c
 @@ -287,9 +287,16 @@ static struct intel_pmic_opregion_data intel_crc_pmic_opregion_data = {
@@ -60,7 +60,7 @@ index 2a692cc4b7ae..f2cdb5e4704c 100644
  
  static struct platform_driver intel_crc_pmic_opregion_driver = {
 diff --git a/drivers/acpi/pmic/intel_pmic_chtcrc.c b/drivers/acpi/pmic/intel_pmic_chtcrc.c
-index ebf8d3187df1..30398d9f5d4d 100644
+index ebf8d3187df1f..30398d9f5d4d1 100644
 --- a/drivers/acpi/pmic/intel_pmic_chtcrc.c
 +++ b/drivers/acpi/pmic/intel_pmic_chtcrc.c
 @@ -30,9 +30,16 @@ static struct intel_pmic_opregion_data intel_chtcrc_pmic_opregion_data = {
@@ -82,7 +82,7 @@ index ebf8d3187df1..30398d9f5d4d 100644
  
  static struct platform_driver intel_chtcrc_pmic_opregion_driver = {
 diff --git a/drivers/acpi/pmic/intel_pmic_chtdc_ti.c b/drivers/acpi/pmic/intel_pmic_chtdc_ti.c
-index a5101b07611a..519ed2fea2ed 100644
+index a5101b07611aa..519ed2fea2ed9 100644
 --- a/drivers/acpi/pmic/intel_pmic_chtdc_ti.c
 +++ b/drivers/acpi/pmic/intel_pmic_chtdc_ti.c
 @@ -110,9 +110,12 @@ static int chtdc_ti_pmic_opregion_probe(struct platform_device *pdev)
@@ -99,7 +99,7 @@ index a5101b07611a..519ed2fea2ed 100644
  		return err;
  
 diff --git a/drivers/acpi/pmic/intel_pmic_chtwc.c b/drivers/acpi/pmic/intel_pmic_chtwc.c
-index 7ffd5624b8e1..221dddf9e373 100644
+index 7ffd5624b8e15..221dddf9e3735 100644
 --- a/drivers/acpi/pmic/intel_pmic_chtwc.c
 +++ b/drivers/acpi/pmic/intel_pmic_chtwc.c
 @@ -264,11 +264,17 @@ static struct intel_pmic_opregion_data intel_cht_wc_pmic_opregion_data = {
@@ -122,7 +122,7 @@ index 7ffd5624b8e1..221dddf9e373 100644
  
  static const struct platform_device_id cht_wc_opregion_id_table[] = {
 diff --git a/drivers/acpi/pmic/intel_pmic_xpower.c b/drivers/acpi/pmic/intel_pmic_xpower.c
-index a091d5a8392c..dc6c11642967 100644
+index a091d5a8392c6..dc6c11642967a 100644
 --- a/drivers/acpi/pmic/intel_pmic_xpower.c
 +++ b/drivers/acpi/pmic/intel_pmic_xpower.c
 @@ -282,6 +282,8 @@ static int intel_xpower_pmic_opregion_probe(struct platform_device *pdev)
@@ -143,7 +143,7 @@ index a091d5a8392c..dc6c11642967 100644
  		acpi_remove_address_space_handler(ACPI_HANDLE(parent),
  						  ACPI_ADR_SPACE_GPIO,
 diff --git a/drivers/acpi/pmic/tps68470_pmic.c b/drivers/acpi/pmic/tps68470_pmic.c
-index ebd03e472955..c2b5cd243499 100644
+index ebd03e4729555..c2b5cd243499b 100644
 --- a/drivers/acpi/pmic/tps68470_pmic.c
 +++ b/drivers/acpi/pmic/tps68470_pmic.c
 @@ -376,6 +376,8 @@ static int tps68470_pmic_opregion_probe(struct platform_device *pdev)
