@@ -1,4 +1,4 @@
-From 00cb2430d54f7c359d5cbf43ba9cce230fc5c9fe Mon Sep 17 00:00:00 2001
+From 3c23c7a8ae7ecc3c5780fe575c53da098bb9f7e6 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Mon, 13 Jul 2020 11:02:08 +0900
 Subject: [PATCH 2/7] ACPI / PMIC: Add i2c address for intel_pmic_bytcrc
@@ -42,7 +42,7 @@ Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/acpi/pmic/intel_pmic_bytcrc.c b/drivers/acpi/pmic/intel_pmic_bytcrc.c
-index f2cdb5e4704c..61c0778ba6b4 100644
+index f2cdb5e4704cf..61c0778ba6b42 100644
 --- a/drivers/acpi/pmic/intel_pmic_bytcrc.c
 +++ b/drivers/acpi/pmic/intel_pmic_bytcrc.c
 @@ -282,6 +282,7 @@ static struct intel_pmic_opregion_data intel_crc_pmic_opregion_data = {

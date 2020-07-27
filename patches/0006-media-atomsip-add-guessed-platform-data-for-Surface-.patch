@@ -1,4 +1,4 @@
-From 17410ddc2991ae8b71d81ae69eb6bde0d8ec1805 Mon Sep 17 00:00:00 2001
+From bafcac23fa0f63b37ee7a69f7d0160869e95268b Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sat, 27 Jun 2020 13:07:08 +0900
 Subject: [PATCH 6/7] media: atomsip: add (guessed) platform data for Surface 3
@@ -12,7 +12,7 @@ Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
  1 file changed, 32 insertions(+)
 
 diff --git a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
-index 3e17e296e68b..9cb3f5d469fa 100644
+index 7ec805c83ab1f..340b89e024046 100644
 --- a/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
 +++ b/drivers/staging/media/atomisp/pci/atomisp_gmin_platform.c
 @@ -321,6 +321,20 @@ static struct gmin_cfg_var i8880_vars[] = {
