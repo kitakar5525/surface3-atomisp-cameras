@@ -732,7 +732,7 @@ static long ov8830_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
 	case ATOMISP_IOC_G_SENSOR_PRIV_INT_DATA:
 		return ov8830_g_priv_int_data(sd, arg);
 	default:
-		dev_err(&client->dev, "%s: invalid ioctl cmd\n", __func__);
+		dev_info(&client->dev, "%s: Unhandled command 0x%X\n", __func__, cmd);
 		return -EINVAL;
 	}
 	return 0;
