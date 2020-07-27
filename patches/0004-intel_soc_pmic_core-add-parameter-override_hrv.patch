@@ -1,4 +1,4 @@
-From 424c4cac8c00b4e9a8a74eb2f1a56ebe95e48e6c Mon Sep 17 00:00:00 2001
+From b04ef4568cb410e47485f0e729f948cd8ecad698 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 28 Jun 2020 14:49:25 +0900
 Subject: [PATCH 4/7] intel_soc_pmic_core: add parameter override_hrv
@@ -53,7 +53,7 @@ Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
  1 file changed, 8 insertions(+)
 
 diff --git a/drivers/mfd/intel_soc_pmic_core.c b/drivers/mfd/intel_soc_pmic_core.c
-index ddd64f9e3341..9b13c58531a4 100644
+index ddd64f9e3341e..9b13c58531a45 100644
 --- a/drivers/mfd/intel_soc_pmic_core.c
 +++ b/drivers/mfd/intel_soc_pmic_core.c
 @@ -28,6 +28,11 @@ static struct pwm_lookup crc_pwm_lookup[] = {
