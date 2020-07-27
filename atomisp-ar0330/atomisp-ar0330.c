@@ -13,7 +13,6 @@
 #include <linux/i2c.h>
 #include <linux/module.h>
 #include <linux/pm_runtime.h>
-#include <linux/regulator/consumer.h>
 #include <linux/slab.h>
 #include <linux/sysfs.h>
 #include <linux/version.h>
@@ -104,7 +103,6 @@ struct ar0330 {
 	struct i2c_client	*client;
 	struct gpio_desc	*reset_gpio;
 	struct gpio_desc	*pwdn_gpio;
-	struct regulator_bulk_data supplies[AR0330_NUM_SUPPLIES];
 
 	struct v4l2_subdev	subdev;
 	struct media_pad	pad;
@@ -595,13 +593,6 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 	if (!IS_ERR(ar0330->reset_gpio))
 		gpiod_set_value_cansleep(ar0330->reset_gpio, 0);
 
-	ret = regulator_bulk_enable(AR0330_NUM_SUPPLIES, ar0330->supplies);
-	usleep_range(20000, 50000);
-	if (ret < 0) {
-		dev_err(dev, "Failed to enable regulators\n");
-		return ret;
-	}
-
 	if (!IS_ERR(ar0330->reset_gpio))
 		gpiod_set_value_cansleep(ar0330->reset_gpio, 1);
 
@@ -621,7 +612,6 @@ static void __ar0330_power_off(struct ar0330 *ar0330)
 		gpiod_set_value_cansleep(ar0330->pwdn_gpio, 0);
 	if (!IS_ERR(ar0330->reset_gpio))
 		gpiod_set_value_cansleep(ar0330->reset_gpio, 1);
-	regulator_bulk_disable(AR0330_NUM_SUPPLIES, ar0330->supplies);
 }
 
 static int ar0330_runtime_resume(struct device *dev)
@@ -864,18 +854,6 @@ static int ar0330_check_sensor_id(struct ar0330 *ar0330,
 	return 0;
 }
 
-static int ar0330_configure_regulators(struct ar0330 *ar0330)
-{
-	u32 i;
-
-	for (i = 0; i < AR0330_NUM_SUPPLIES; i++)
-		ar0330->supplies[i].supply = ar0330_supply_names[i];
-
-	return devm_regulator_bulk_get(&ar0330->client->dev,
-				       AR0330_NUM_SUPPLIES,
-				       ar0330->supplies);
-}
-
 static int ar0330_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
@@ -903,12 +881,6 @@ static int ar0330_probe(struct i2c_client *client,
 	ar0330->pwdn_gpio = devm_gpiod_get(dev, "pwdn", GPIOD_OUT_LOW);
 	if (IS_ERR(ar0330->pwdn_gpio))
 		dev_warn(dev, "Failed to get pwdn-gpios\n");
-
-	ret = ar0330_configure_regulators(ar0330);
-	if (ret) {
-		dev_err(dev, "Failed to get power regulators\n");
-		return ret;
-	}
 
 	mutex_init(&ar0330->mutex);
 
