@@ -9,7 +9,6 @@
 #include <linux/acpi.h>
 #include <linux/device.h>
 #include <linux/delay.h>
-#include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
 #include <linux/module.h>
 #include <linux/pm_runtime.h>
@@ -101,8 +100,6 @@ struct ar0330_mode {
 
 struct ar0330 {
 	struct i2c_client	*client;
-	struct gpio_desc	*reset_gpio;
-	struct gpio_desc	*pwdn_gpio;
 
 	struct v4l2_subdev	subdev;
 	struct media_pad	pad;
@@ -582,6 +579,29 @@ static inline u32 ar0330_cal_delay(u32 cycles)
 	return DIV_ROUND_UP(cycles, AR0330_XVCLK_FREQ / 1000 / 1000);
 }
 
+static int gpio_ctrl(struct v4l2_subdev *sd, bool flag)
+{
+	int ret;
+	struct ar0330 *dev = to_ar0330(sd);
+
+	if (!dev || !dev->platform_data)
+		return -ENODEV;
+
+	/* Surface 3 has only one GPIO pin for this sensor, but other device
+	 * might have two, not sure. */
+	if (flag) {
+		ret = dev->platform_data->gpio0_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+		/* Ignore return from second gpio, it may not be there */
+		dev->platform_data->gpio1_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+	} else {
+		dev->platform_data->gpio1_ctrl(sd, 0);
+		ret = dev->platform_data->gpio0_ctrl(sd, 0);
+	}
+	return ret;
+}
+
 static int __ar0330_power_on(struct ar0330 *ar0330)
 {
 	int ret;
@@ -590,14 +610,22 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 
 	dev_info(dev, "%s(%d) enter\n", __func__, __LINE__);
 
-	if (!IS_ERR(ar0330->reset_gpio))
-		gpiod_set_value_cansleep(ar0330->reset_gpio, 0);
+	/* TODO: original ar0330 driver turns gpio off here, really needed? */
+	ret = gpio_ctrl(&ar0330->subdev, 0);
+	if (ret)
+		return ret;
+		/* TODO: use this label instead later when this label added */
+		// goto fail_power;
 
-	if (!IS_ERR(ar0330->reset_gpio))
-		gpiod_set_value_cansleep(ar0330->reset_gpio, 1);
-
-	if (!IS_ERR(ar0330->pwdn_gpio))
-		gpiod_set_value_cansleep(ar0330->pwdn_gpio, 1);
+	/* gpio ctrl */
+	ret = gpio_ctrl(&ar0330->subdev, 1);
+	if (ret) {
+		ret = gpio_ctrl(&ar0330->subdev, 1);
+		if (ret)
+			return ret;
+			/* TODO: use this label instead later when this label added */
+			// goto fail_power;
+	}
 
 	/* 8192 cycles prior to first SCCB transaction */
 	delay_us = ar0330_cal_delay(92000);
@@ -608,10 +636,16 @@ static int __ar0330_power_on(struct ar0330 *ar0330)
 
 static void __ar0330_power_off(struct ar0330 *ar0330)
 {
-	if (!IS_ERR(ar0330->pwdn_gpio))
-		gpiod_set_value_cansleep(ar0330->pwdn_gpio, 0);
-	if (!IS_ERR(ar0330->reset_gpio))
-		gpiod_set_value_cansleep(ar0330->reset_gpio, 1);
+	struct i2c_client *client = v4l2_get_subdevdata(&ar0330->subdev);
+	int ret;
+
+	/* gpio ctrl */
+	ret = gpio_ctrl(&ar0330->subdev, 0);
+	if (ret) {
+		ret = gpio_ctrl(&ar0330->subdev, 0);
+		if (ret)
+			dev_err(&client->dev, "gpio failed 2\n");
+	}
 }
 
 static int ar0330_runtime_resume(struct device *dev)
@@ -873,14 +907,6 @@ static int ar0330_probe(struct i2c_client *client,
 
 	ar0330->client = client;
 	ar0330->cur_mode = &supported_modes[0];
-
-	ar0330->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_LOW);
-	if (IS_ERR(ar0330->reset_gpio))
-		dev_warn(dev, "Failed to get reset-gpios\n");
-
-	ar0330->pwdn_gpio = devm_gpiod_get(dev, "pwdn", GPIOD_OUT_LOW);
-	if (IS_ERR(ar0330->pwdn_gpio))
-		dev_warn(dev, "Failed to get pwdn-gpios\n");
 
 	mutex_init(&ar0330->mutex);
 
