@@ -998,14 +998,6 @@ static int ar0330_remove(struct i2c_client *client)
 	return 0;
 }
 
-#if IS_ENABLED(CONFIG_OF)
-static const struct of_device_id ar0330_of_match[] = {
-	{ .compatible = "Aptina,ar0330" },
-	{},
-};
-MODULE_DEVICE_TABLE(of, ar0330_of_match);
-#endif
-
 static const struct i2c_device_id ar0330_match_id[] = {
 	{ "Aptina,ar0330", 0 },
 	{ },
@@ -1015,7 +1007,6 @@ static struct i2c_driver ar0330_i2c_driver = {
 	.driver = {
 		.name = AR0330_NAME,
 		.pm = &ar0330_pm_ops,
-		.of_match_table = of_match_ptr(ar0330_of_match),
 	},
 	.probe		= &ar0330_probe,
 	.remove		= &ar0330_remove,
