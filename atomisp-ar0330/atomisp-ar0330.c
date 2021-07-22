@@ -998,8 +998,10 @@ static int ar0330_probe(struct i2c_client *client,
 	pdata = gmin_camera_platform_data(sd,
 					  ATOMISP_INPUT_FORMAT_RAW_10,
 					  atomisp_bayer_order_bggr);
-	if (!pdata)
+	if (!pdata) {
+		ret = -EINVAL;
 		goto out_free;
+	}
 
 	ret = ar0330_s_config(sd, client->irq, pdata);
 	if (ret)
