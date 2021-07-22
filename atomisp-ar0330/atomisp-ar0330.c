@@ -638,7 +638,7 @@ fail_power:
 	return ret;
 }
 
-static void power_down(struct ar0330 *ar0330)
+static int power_down(struct ar0330 *ar0330)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(&ar0330->subdev);
 	int ret;
@@ -646,7 +646,7 @@ static void power_down(struct ar0330 *ar0330)
 	if (!ar0330->platform_data) {
 		dev_err(&client->dev,
 			"no camera_sensor_platform_data");
-		return;
+		return -ENODEV;
 	}
 
 	ret = ar0330->platform_data->flisclk_ctrl(&ar0330->subdev, 0);
@@ -665,6 +665,8 @@ static void power_down(struct ar0330 *ar0330)
 	ret = power_ctrl(&ar0330->subdev, 0);
 	if (ret)
 		dev_err(&client->dev, "vprog failed.\n");
+
+	return ret;
 }
 
 static int ar0330_s_power(struct v4l2_subdev *sd, int on)
@@ -675,7 +677,7 @@ static int ar0330_s_power(struct v4l2_subdev *sd, int on)
 	mutex_lock(&ar0330->mutex);
 
 	if (on == 0) {
-		power_down(ar0330);
+		ret = power_down(ar0330);
 	} else {
 		ret = power_up(ar0330);
 		if (!ret)
@@ -923,12 +925,11 @@ static int ar0330_s_config(struct v4l2_subdev *sd,
 	 * as first power on by board may not fulfill the
 	 * power on sequqence needed by the module
 	 */
-	power_down(dev);
-	/* TODO: make power_down() return value? */
-	// if (ret) {
-	// 	dev_err(&client->dev, "ar0330 power-off err.\n");
-	// 	goto fail_power_off;
-	// }
+	ret = power_down(dev);
+	if (ret) {
+		dev_err(&client->dev, "ar0330 power-off err.\n");
+		goto fail_power_off;
+	}
 
 	ret = power_up(dev);
 	if (ret) {
@@ -949,12 +950,11 @@ static int ar0330_s_config(struct v4l2_subdev *sd,
 	}
 
 	/* turn off sensor, after probed */
-	power_down(dev);
-	/* TODO: make power_down() return value? */
-	// if (ret) {
-	// 	dev_err(&client->dev, "ar0330 power-off err.\n");
-	// 	goto fail_csi_cfg;
-	// }
+	ret = power_down(dev);
+	if (ret) {
+		dev_err(&client->dev, "ar0330 power-off err.\n");
+		goto fail_csi_cfg;
+	}
 	mutex_unlock(&dev->mutex);
 
 	return 0;
@@ -964,8 +964,7 @@ fail_csi_cfg:
 fail_power_on:
 	power_down(dev);
 	dev_err(&client->dev, "sensor power-gating failed\n");
-/* TODO: Uncomment this once power_down() started returning value */
-// fail_power_off:
+fail_power_off:
 	mutex_unlock(&dev->mutex);
 	return ret;
 }
