@@ -646,6 +646,7 @@ static void power_down(struct ar0330 *ar0330)
 	if (!ar0330->platform_data) {
 		dev_err(&client->dev,
 			"no camera_sensor_platform_data");
+		return;
 	}
 
 	ret = ar0330->platform_data->flisclk_ctrl(&ar0330->subdev, 0);
