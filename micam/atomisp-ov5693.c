@@ -1766,7 +1766,7 @@ static int ov5693_try_mbus_fmt(struct v4l2_subdev *sd,
 		fmt->height = ov5693_res[idx].height;
 	}
 
-	fmt->code = V4L2_MBUS_FMT_SBGGR10_1X10;
+	fmt->code = MEDIA_BUS_FMT_SBGGR10_1X10;
 
 	return 0;
 }
@@ -1890,7 +1890,7 @@ static int ov5693_g_mbus_fmt(struct v4l2_subdev *sd,
 
 	fmt->width = ov5693_res[dev->fmt_idx].width;
 	fmt->height = ov5693_res[dev->fmt_idx].height;
-	fmt->code = V4L2_MBUS_FMT_SBGGR10_1X10;
+	fmt->code = MEDIA_BUS_FMT_SBGGR10_1X10;
 
 	return 0;
 }
@@ -1985,7 +1985,7 @@ static int ov5693_enum_mbus_fmt(struct v4l2_subdev *sd,
 				unsigned int index,
 				enum v4l2_mbus_pixelcode *code)
 {
-	*code = V4L2_MBUS_FMT_SBGGR10_1X10;
+	*code = MEDIA_BUS_FMT_SBGGR10_1X10;
 
 	return 0;
 }
@@ -2122,7 +2122,7 @@ static int ov5693_enum_mbus_code(struct v4l2_subdev *sd,
 	if (code->index >= MAX_FMTS)
 		return -EINVAL;
 
-	code->code = V4L2_MBUS_FMT_SBGGR10_1X10;
+	code->code = MEDIA_BUS_FMT_SBGGR10_1X10;
 	return 0;
 }
 
@@ -2299,7 +2299,7 @@ static int ov5693_probe(struct i2c_client *client,
 
 	dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	dev->pad.flags = MEDIA_PAD_FL_SOURCE;
-	dev->format.code = V4L2_MBUS_FMT_SBGGR10_1X10;
+	dev->format.code = MEDIA_BUS_FMT_SBGGR10_1X10;
 	dev->sd.entity.type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
 
 	ret = media_entity_init(&dev->sd.entity, 1, &dev->pad, 0);
