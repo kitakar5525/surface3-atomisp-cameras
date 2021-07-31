@@ -1741,7 +1741,7 @@ static int t4ka3_enum_frameintervals(struct v4l2_subdev *sd,
 
 static int t4ka3_enum_mbus_fmt(struct v4l2_subdev *sd,
 					unsigned int index,
-				 enum v4l2_mbus_pixelcode *code)
+				 u32 *code)
 {
 	if (index >= MAX_FMTS)
 		return -EINVAL;
