@@ -1983,7 +1983,7 @@ static int ov5693_enum_frameintervals(struct v4l2_subdev *sd,
 
 static int ov5693_enum_mbus_fmt(struct v4l2_subdev *sd,
 				unsigned int index,
-				enum v4l2_mbus_pixelcode *code)
+				u32 *code)
 {
 	*code = MEDIA_BUS_FMT_SBGGR10_1X10;
 
