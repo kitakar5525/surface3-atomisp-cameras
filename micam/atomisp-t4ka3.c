@@ -654,9 +654,8 @@ static int t4ka3_get_intg_factor(struct i2c_client *client,
 	if (ret)
 		return ret;
 	line_length_pck = data[0];
-	fine_integration_time = data[0] * 0.4161;
-	dev_info(&client->dev, "fine_integration_time = 0x%x\n",
-		fine_integration_time);
+	fine_integration_time = 0;
+	dev_info(&client->dev, "fine_integration_time set to 0 as not used\n");
 	dev_info(&client->dev, "line_length_pck = 0x%x\n", line_length_pck);
 
 	memset(data, 0, T4KA3_INTG_BUF_COUNT * sizeof(u16));
