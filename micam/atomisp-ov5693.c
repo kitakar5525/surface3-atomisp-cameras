@@ -2258,7 +2258,7 @@ static int ov5693_probe(struct i2c_client *client,
 	 * address of 0x10 which doesn't appear on schematics, and
 	 * some BIOS versions haven't gotten the memo.  Work around
 	 * via config. */
-	i2c = gmin_get_var_int(&client->dev, "I2CAddr", -1);
+	i2c = gmin_get_var_int(&client->dev, false, "I2CAddr", -1);
 	if (i2c != -1) {
 		dev_info(&client->dev,
 		"Overriding firmware-provided I2C address (0x%x) with 0x%x\n",
