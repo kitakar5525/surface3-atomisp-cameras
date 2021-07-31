@@ -2241,7 +2241,6 @@ static int ov5693_remove(struct i2c_client *client)
 #endif
 	media_entity_cleanup(&dev->sd.entity);
 	ov5693_vendorid_procfs_uninit();
-	kfree(dev);
 
 	return 0;
 }
@@ -2267,11 +2266,9 @@ static int ov5693_probe(struct i2c_client *client,
 		client->addr = i2c;
 	}
 
-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-	if (!dev) {
-		dev_err(&client->dev, "out of memory\n");
+	dev = devm_kzalloc(&client->dev, sizeof(*dev), GFP_KERNEL);
+	if (!dev)
 		return -ENOMEM;
-	}
 
 	mutex_init(&dev->input_lock);
 
@@ -2317,7 +2314,6 @@ static int ov5693_probe(struct i2c_client *client,
 	return ret;
 out_free:
 	v4l2_device_unregister_subdev(&dev->sd);
-	kfree(dev);
 	return ret;
 }
 
