@@ -504,7 +504,6 @@ fail_gpio:
 	dev->platform_data->gpio0_ctrl(sd, 0);
 	dev->platform_data->gpio1_ctrl(sd, 0);
 fail_power:
-	dev->platform_data->power_ctrl(sd, 0);
 	dev_err(&client->dev, "sensor power-up failed\n");
 
 	return ret;
