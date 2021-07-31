@@ -799,7 +799,7 @@ static int t4ka3_try_mbus_fmt(struct v4l2_subdev *sd,
 		(fmt->height > T4KA3_RES_HEIGHT_MAX)) {
 		fmt->width = T4KA3_RES_WIDTH_MAX;
 		fmt->height = T4KA3_RES_HEIGHT_MAX;
-		fmt->code = V4L2_MBUS_FMT_SGRBG10_1X10;
+		fmt->code = MEDIA_BUS_FMT_SGRBG10_1X10;
 	} else {
 		idx = nearest_resolution_index(fmt->width, fmt->height);
 
@@ -1746,7 +1746,7 @@ static int t4ka3_enum_mbus_fmt(struct v4l2_subdev *sd,
 	if (index >= MAX_FMTS)
 		return -EINVAL;
 
-	*code = V4L2_MBUS_FMT_SGRBG10_1X10;
+	*code = MEDIA_BUS_FMT_SGRBG10_1X10;
 	return 0;
 }
 
@@ -1757,7 +1757,7 @@ t4ka3_enum_mbus_code(struct v4l2_subdev *sd,
 {
 	if (code->index >= MAX_FMTS)
 		return -EINVAL;
-	code->code = V4L2_MBUS_FMT_SGRBG10_1X10;
+	code->code = MEDIA_BUS_FMT_SGRBG10_1X10;
 
 	return 0;
 }
@@ -2074,7 +2074,7 @@ static int t4ka3_probe(struct i2c_client *client,
 
 	dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	dev->pad.flags = MEDIA_PAD_FL_SOURCE;
-	dev->format.code = V4L2_MBUS_FMT_SGRBG10_1X10;
+	dev->format.code = MEDIA_BUS_FMT_SGRBG10_1X10;
 	dev->sd.entity.type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
 	dev->flip = 0;
 
