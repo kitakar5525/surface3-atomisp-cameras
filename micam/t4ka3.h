@@ -945,7 +945,7 @@ struct t4ka3_resolution t4ka3_res_preview[] = {
 		.used = 0,
 		.skip_frames = 2,
 		.mipi_freq = 700800,
-		.code = V4L2_MBUS_FMT_SGRBG10_1X10,
+		.code = MEDIA_BUS_FMT_SGRBG10_1X10,
 	},
 	{
 		.desc = "t4ka3_896x736_30fps",
@@ -960,7 +960,7 @@ struct t4ka3_resolution t4ka3_res_preview[] = {
 		.used = 0,
 		.skip_frames = 2,
 		.mipi_freq = 700800,
-		.code = V4L2_MBUS_FMT_SGRBG10_1X10,
+		.code = MEDIA_BUS_FMT_SGRBG10_1X10,
 	},
 	{
 		.desc = "t4ka3_1936x1096_30fps",
@@ -975,7 +975,7 @@ struct t4ka3_resolution t4ka3_res_preview[] = {
 		.used = 0,
 		.skip_frames = 2,
 		.mipi_freq = 700800,
-		.code = V4L2_MBUS_FMT_SGRBG10_1X10,
+		.code = MEDIA_BUS_FMT_SGRBG10_1X10,
 	},
 	{
 		.desc = "t4ka3_3280x2464_30fps",
@@ -990,7 +990,7 @@ struct t4ka3_resolution t4ka3_res_preview[] = {
 		.used = 0,
 		.skip_frames = 2,
 		.mipi_freq = 700800,
-		.code = V4L2_MBUS_FMT_SGRBG10_1X10,
+		.code = MEDIA_BUS_FMT_SGRBG10_1X10,
 	},
 };
 #define N_RES_PREVIEW (ARRAY_SIZE(t4ka3_res_preview))
@@ -1009,7 +1009,7 @@ struct t4ka3_resolution t4ka3_res_still[] = {
 		.used = 0,
 		.skip_frames = 2,
 		.mipi_freq = 700800,
-		.code = V4L2_MBUS_FMT_SGRBG10_1X10,
+		.code = MEDIA_BUS_FMT_SGRBG10_1X10,
 	},
 };
 #define N_RES_STILL (ARRAY_SIZE(t4ka3_res_still))
@@ -1028,7 +1028,7 @@ struct t4ka3_resolution t4ka3_res_video[] = {
 		.used = 0,
 		.skip_frames = 2,
 		.mipi_freq = 700800,
-		.code = V4L2_MBUS_FMT_SGRBG10_1X10,
+		.code = MEDIA_BUS_FMT_SGRBG10_1X10,
 	},
 	{
 		.desc = "t4ka3_3280x1852_30fps",
@@ -1043,7 +1043,7 @@ struct t4ka3_resolution t4ka3_res_video[] = {
 		.used = 0,
 		.skip_frames = 2,
 		.mipi_freq = 700800,
-		.code = V4L2_MBUS_FMT_SGRBG10_1X10,
+		.code = MEDIA_BUS_FMT_SGRBG10_1X10,
 	},
 	{
 		.desc = "t4ka3_3280x2464_30fps",
@@ -1058,7 +1058,7 @@ struct t4ka3_resolution t4ka3_res_video[] = {
 		.used = 0,
 		.skip_frames = 2,
 		.mipi_freq = 700800,
-		.code = V4L2_MBUS_FMT_SGRBG10_1X10,
+		.code = MEDIA_BUS_FMT_SGRBG10_1X10,
 	},
 };
 #define N_RES_VIDEO (ARRAY_SIZE(t4ka3_res_video))
