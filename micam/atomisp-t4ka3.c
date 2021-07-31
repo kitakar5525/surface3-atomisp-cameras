@@ -2031,7 +2031,7 @@ static int t4ka3_probe(struct i2c_client *client,
 	int ret = 0;
 	void *pdata = client->dev.platform_data;
 
-	dev_info(&client->dev, "%s start build time %s\n", __func__, __TIME__);
+	dev_info(&client->dev, "%s() called\n", __func__);
 
 	/* allocate sensor device & init sub device */
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
