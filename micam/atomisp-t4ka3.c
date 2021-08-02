@@ -2113,6 +2113,7 @@ static const struct i2c_device_id t4ka3_id[] = {
 /*Temp ID, need change to official one after get from TOSHIBA*/
 static struct acpi_device_id T4KA3_acpi_match[] = {
 	{ "TOSB0001" },
+	{ "XMCC0003" },
 	{},
 };
 
