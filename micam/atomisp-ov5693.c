@@ -2313,6 +2313,7 @@ MODULE_DEVICE_TABLE(i2c, ov5693_id);
 
 static struct acpi_device_id ov5693_acpi_match[] = {
 	{"OVTI5693"},
+	{"INT33BE"},
 	{},
 };
 MODULE_DEVICE_TABLE(acpi, ov5693_acpi_match);
