@@ -2131,18 +2131,7 @@ static struct i2c_driver t4ka3_driver = {
 	.id_table = t4ka3_id,
 };
 
-static __init int init_t4ka3(void)
-{
-	return i2c_add_driver(&t4ka3_driver);
-}
-
-static __exit void exit_t4ka3(void)
-{
-	i2c_del_driver(&t4ka3_driver);
-}
-
-module_init(init_t4ka3);
-module_exit(exit_t4ka3);
+module_i2c_driver(t4ka3_driver)
 
 MODULE_DESCRIPTION("A low-level driver for T4KA3 sensor");
 MODULE_AUTHOR("HARVEY LV <harvey.lv@intel.com>");
