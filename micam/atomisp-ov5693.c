@@ -37,7 +37,7 @@
 #include <media/v4l2-device.h>
 #include <linux/io.h>
 #include <linux/acpi.h>
-#include "include/atomisp_gmin_platform.h"
+#include <linux/atomisp_gmin_platform.h>
 
 #include "ov5693.h"
 
