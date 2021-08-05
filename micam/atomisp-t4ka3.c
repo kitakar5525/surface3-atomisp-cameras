@@ -2118,7 +2118,6 @@ MODULE_DEVICE_TABLE(i2c, t4ka3_id);
 
 static struct i2c_driver t4ka3_driver = {
 	.driver = {
-		.owner = THIS_MODULE,
 		.name = T4KA3_NAME,
 		.acpi_match_table = ACPI_PTR(T4KA3_acpi_match),
 	},
