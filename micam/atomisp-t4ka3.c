@@ -2114,6 +2114,7 @@ static struct acpi_device_id T4KA3_acpi_match[] = {
 	{ "XMCC0003" },
 	{},
 };
+MODULE_DEVICE_TABLE(acpi, T4KA3_acpi_match);
 
 static struct i2c_driver t4ka3_driver = {
 	.driver = {
