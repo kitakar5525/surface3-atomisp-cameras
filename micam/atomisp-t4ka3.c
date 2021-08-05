@@ -1998,7 +1998,6 @@ static int t4ka3_remove(struct i2c_client *client)
 	media_entity_cleanup(&dev->sd.entity);
 	atomisp_gmin_remove_subdev(sd);
 	t4ka3_vendorid_procfs_uninit();
-	kfree(dev);
 
 	return 0;
 }
@@ -2033,11 +2032,9 @@ static int t4ka3_probe(struct i2c_client *client,
 	dev_info(&client->dev, "%s() called\n", __func__);
 
 	/* allocate sensor device & init sub device */
-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-	if (!dev) {
-		dev_err(&client->dev, "%s: out of memory\n", __func__);
+	dev = devm_kzalloc(&client->dev, sizeof(*dev), GFP_KERNEL);
+	if (!dev)
 		return -ENOMEM;
-	}
 
 	mutex_init(&dev->input_lock);
 
@@ -2102,7 +2099,6 @@ static int t4ka3_probe(struct i2c_client *client,
 
 out_free:
 	v4l2_device_unregister_subdev(&dev->sd);
-	kfree(dev);
 	return ret;
 }
 
