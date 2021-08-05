@@ -723,57 +723,6 @@ static long ov5693_s_exposure(struct v4l2_subdev *sd,
 	return ov5693_set_exposure(sd, coarse_itg, analog_gain, digital_gain);
 }
 
-static u8 vid = 1;
-static struct proc_dir_entry *iddir;
-static struct proc_dir_entry *idfile;
-static int vendorid_proc_show(struct seq_file *m, void *v)
-{
-	seq_printf(m, "%d\n", vid);
-	return 0;
-}
-
-static int vendorid_proc_open(struct inode *inode, struct file *file)
-{
-	return single_open(file, vendorid_proc_show, NULL);
-}
-
-static const struct file_operations vendorid_proc_fops = {
-	.owner = THIS_MODULE,
-	.open = vendorid_proc_open,
-	.read = seq_read,
-	.llseek = seq_lseek,
-	.release = single_release,
-};
-
-static int ov5693_vendorid_procfs_init(struct i2c_client *client)
-{
-
-	idfile = proc_create("camera/frontvid", 0644, NULL,
-				&vendorid_proc_fops);
-	if (!idfile) {
-		dev_err(&client->dev, "Can't create file /proc/camera/frontvid\n");
-		remove_proc_entry("camera", iddir);
-		return -EPERM;
-	}
-
-	return 0;
-}
-
-static int ov5693_vendorid_procfs_uninit(void)
-{
-	if (idfile != NULL)
-		proc_remove(idfile);
-	if (iddir != NULL)
-		proc_remove(iddir);
-	return 0;
-}
-
-static int ov5693_vendorid_set(u8 vendorid)
-{
-	vid = vendorid;
-	return 0;
-}
-
 static int __check_sum (u8 *buf, int size, u8 sum) {
 	u8 temp = 0;
 	int i = 0;
@@ -927,12 +876,6 @@ static int __ov5693_otp_read(struct v4l2_subdev *sd, u8 *buf)
 		dev_err(&client->dev, "failed to read OTP data\n");
 		goto error;
 	}
-
-	/*Set module value*/
-	if (module == 1)
-		ov5693_vendorid_set(module);
-	else
-		ov5693_vendorid_set(2);
 
 	b = tempbuf;
 	index = 0;
@@ -2232,7 +2175,6 @@ static int ov5693_remove(struct i2c_client *client)
 	atomisp_gmin_remove_subdev(sd);
 #endif
 	media_entity_cleanup(&dev->sd.entity);
-	ov5693_vendorid_procfs_uninit();
 
 	return 0;
 }
@@ -2294,12 +2236,6 @@ static int ov5693_probe(struct i2c_client *client,
 	ret = media_entity_init(&dev->sd.entity, 1, &dev->pad, 0);
 	if (ret)
 		ov5693_remove(client);
-
-	ret = ov5693_vendorid_procfs_init(client);
-	if (ret) {
-		dev_err(&client->dev, "%s Failed to proc fs\n", __func__);
-		ov5693_vendorid_procfs_uninit();
-	}
 
 	global_dev = dev;
 
