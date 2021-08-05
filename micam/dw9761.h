@@ -17,7 +17,7 @@
 #ifndef __DW9761_H__
 #define __DW9761_H__
 
-#include "include/atomisp_platform.h"
+#include <linux/atomisp_platform.h>
 #include <linux/types.h>
 
 #define DW9761_VCM_ADDR	 (0x18 >> 1)
