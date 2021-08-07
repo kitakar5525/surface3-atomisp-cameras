@@ -1773,6 +1773,8 @@ static int ov8830_remove(struct i2c_client *client)
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 
+	pr_info("%s() called\n", __func__);
+
 	media_entity_cleanup(&dev->sd.entity);
 	v4l2_ctrl_handler_free(&dev->ctrl_handler);
 	dev->platform_data->csi_cfg(sd, 0);
@@ -1900,6 +1902,8 @@ static int ov8830_probe(struct i2c_client *client,
 	unsigned int i;
 	int ret;
 	void *pdata;
+
+	pr_info("%s() called\n", __func__);
 
 	/* allocate sensor device & init sub device */
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
