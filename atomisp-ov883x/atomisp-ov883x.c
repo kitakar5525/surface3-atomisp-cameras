@@ -1312,8 +1312,6 @@ static int
 ov8830_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state,
 		       struct v4l2_subdev_mbus_code_enum *code)
 {
-	pr_info("%s() called\n", __func__);
-
 	if (code->index)
 		return -EINVAL;
 	code->code = MEDIA_BUS_FMT_SBGGR10_1X10;
@@ -1330,8 +1328,6 @@ ov8830_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_stat
 {
 	int index = fse->index;
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
-
-	pr_info("%s() called\n", __func__);
 
 	mutex_lock(&dev->input_lock);
 	if (index >= dev->entries_curr_table) {
@@ -1359,8 +1355,6 @@ static int ov8830_enum_frame_interval(struct v4l2_subdev *sd,
 	int fmt_index;
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	const struct ov8830_resolution *res;
-
-	pr_info("%s() called\n", __func__);
 
 	mutex_lock(&dev->input_lock);
 
@@ -1395,8 +1389,6 @@ __ov8830_get_pad_format(struct ov8830_device *sensor,
 			 struct v4l2_subdev_state *sd_state, unsigned int pad,
 			 enum v4l2_subdev_format_whence which)
 {
-	pr_info("%s() called\n", __func__);
-
 	if (which == V4L2_SUBDEV_FORMAT_TRY)
 		return v4l2_subdev_get_try_format(&sensor->sd, sd_state, pad);
 
@@ -1408,8 +1400,6 @@ ov8830_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state
 		       struct v4l2_subdev_format *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
-
-	pr_info("%s() called\n", __func__);
 
 	fmt->format = *__ov8830_get_pad_format(dev, sd_state, fmt->pad, fmt->which);
 
@@ -1423,8 +1413,6 @@ ov8830_set_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
 			__ov8830_get_pad_format(dev, sd_state, fmt->pad, fmt->which);
-
-	pr_info("%s() called\n", __func__);
 
 	*format = fmt->format;
 
