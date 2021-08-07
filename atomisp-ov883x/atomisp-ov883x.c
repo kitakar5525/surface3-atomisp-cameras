@@ -1183,6 +1183,8 @@ static int __ov8830_try_mbus_fmt(struct v4l2_subdev *sd,
 	int idx;
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 
+	pr_info("%s() called\n", __func__);
+
 	if (!fmt)
 		return -EINVAL;
 
@@ -1215,6 +1217,8 @@ static int ov8830_try_mbus_fmt(struct v4l2_subdev *sd,
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	int r;
 
+	pr_info("%s() called\n", __func__);
+
 	mutex_lock(&dev->input_lock);
 	r = __ov8830_try_mbus_fmt(sd, fmt);
 	mutex_unlock(&dev->input_lock);
@@ -1231,6 +1235,8 @@ static int ov8830_s_mbus_fmt(struct v4l2_subdev *sd,
 	u16 hts, vts;
 	int ret;
 	const struct ov8830_resolution *res;
+
+	pr_info("%s() called\n", __func__);
 
 	ov8830_info = v4l2_get_subdev_hostdata(sd);
 	if (ov8830_info == NULL)
@@ -1286,6 +1292,8 @@ static int ov8830_g_mbus_fmt(struct v4l2_subdev *sd,
 			      struct v4l2_mbus_framefmt *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
+
+	pr_info("%s() called\n", __func__);
 
 	if (!fmt)
 		return -EINVAL;
@@ -1389,6 +1397,8 @@ static int ov8830_enum_framesizes(struct v4l2_subdev *sd,
 	unsigned int index = fsize->index;
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 
+	pr_info("%s() called\n", __func__);
+
 	mutex_lock(&dev->input_lock);
 	if (index >= dev->entries_curr_table) {
 		mutex_unlock(&dev->input_lock);
@@ -1411,6 +1421,8 @@ static int ov8830_enum_frameintervals(struct v4l2_subdev *sd,
 	int fmt_index;
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	const struct ov8830_resolution *res;
+
+	pr_info("%s() called\n", __func__);
 
 	mutex_lock(&dev->input_lock);
 
@@ -1444,6 +1456,7 @@ static int ov8830_enum_frameintervals(struct v4l2_subdev *sd,
 static int ov8830_enum_mbus_fmt(struct v4l2_subdev *sd, unsigned int index,
 				 u32 *code)
 {
+	pr_info("%s() called\n", __func__);
 	*code = MEDIA_BUS_FMT_SBGGR10_1X10;
 	return 0;
 }
@@ -1518,6 +1531,7 @@ static int
 ov8830_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
 		       struct v4l2_subdev_mbus_code_enum *code)
 {
+	pr_info("%s() called\n", __func__);
 	if (code->index)
 		return -EINVAL;
 	code->code = MEDIA_BUS_FMT_SBGGR10_1X10;
@@ -1531,6 +1545,8 @@ ov8830_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cf
 {
 	int index = fse->index;
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
+
+	pr_info("%s() called\n", __func__);
 
 	mutex_lock(&dev->input_lock);
 	if (index >= dev->entries_curr_table) {
@@ -1547,11 +1563,25 @@ ov8830_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cf
 	return 0;
 }
 
+/*
+ * ov8830 frame intervals
+ */
+static int ov8830_enum_frame_interval(struct v4l2_subdev *sd,
+				      struct v4l2_subdev_pad_config *cfg,
+				      struct v4l2_subdev_frame_interval_enum *fie)
+{
+	pr_info("%s() called\n", __func__);
+
+	return 0;
+}
+
 static struct v4l2_mbus_framefmt *
 __ov8830_get_pad_format(struct ov8830_device *sensor,
 			 struct v4l2_subdev_pad_config *cfg, unsigned int pad,
 			 enum v4l2_subdev_format_whence which)
 {
+	pr_info("%s() called\n", __func__);
+
 	if (which == V4L2_SUBDEV_FORMAT_TRY)
 		return v4l2_subdev_get_try_format(&sensor->sd, cfg, pad);
 
@@ -1563,6 +1593,8 @@ ov8830_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg
 		       struct v4l2_subdev_format *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
+
+	pr_info("%s() called\n", __func__);
 
 	fmt->format = *__ov8830_get_pad_format(dev, cfg, fmt->pad, fmt->which);
 
@@ -1576,6 +1608,8 @@ ov8830_set_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
 			__ov8830_get_pad_format(dev, cfg, fmt->pad, fmt->which);
+
+	pr_info("%s() called\n", __func__);
 
 	*format = fmt->format;
 
@@ -1757,6 +1791,7 @@ static const struct v4l2_subdev_core_ops ov8830_core_ops = {
 static const struct v4l2_subdev_pad_ops ov8830_pad_ops = {
 	.enum_mbus_code = ov8830_enum_mbus_code,
 	.enum_frame_size = ov8830_enum_frame_size,
+	.enum_frame_interval = ov8830_enum_frame_interval,
 	.get_fmt = ov8830_get_pad_format,
 	.set_fmt = ov8830_set_pad_format,
 };
