@@ -22,8 +22,7 @@
 
 #ifndef __OV8830_H__
 #define __OV8830_H__
-#include "../include/linux/atomisp_platform.h"
-#include "../include/linux/atomisp.h"
+#include <linux/atomisp_platform.h>
 #include <linux/delay.h>
 #include <linux/i2c.h>
 #include <linux/kernel.h>
