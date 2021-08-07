@@ -472,7 +472,7 @@ static int drv201_t_focus_abs(struct v4l2_subdev *sd, s32 value)
 	if (r < 0)
 		return r;
 
-	ktime_get_real_ts64(&dev->focus_time);
+	getnstimeofday(&dev->focus_time);
 	dev->focus = value;
 	return 0;
 }
@@ -1480,17 +1480,17 @@ static int ov8830_g_ctrl(struct v4l2_ctrl *ctrl)
 	switch (ctrl->id) {
 	case V4L2_CID_FOCUS_STATUS: {
 #if 0
-		static const struct timespec64 move_time = {
+		static const struct timespec move_time = {
 			/* The time required for focus motor to move the lens */
 			.tv_sec = 0,
 			.tv_nsec = 60000000,
 		};
 		struct drv201_device *drv201 = to_drv201_device(&dev->sd);
-		struct timespec64 current_time, finish_time, delta_time;
+		struct timespec current_time, finish_time, delta_time;
 
-		ktime_get_real_ts64(&current_time);
-		finish_time = timespec64_add(drv201->focus_time, move_time);
-		delta_time = timespec64_sub(current_time, finish_time);
+		getnstimeofday(&current_time);
+		finish_time = timespec_add(drv201->focus_time, move_time);
+		delta_time = timespec_sub(current_time, finish_time);
 		if (delta_time.tv_sec >= 0 && delta_time.tv_nsec >= 0) {
 			/* VCM motor is not moving */
 			ctrl->val = ATOMISP_FOCUS_HP_COMPLETE |
