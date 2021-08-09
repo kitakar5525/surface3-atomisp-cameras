@@ -1560,6 +1560,8 @@ static int ov8830_s_ctrl(struct v4l2_ctrl *ctrl)
 		ctrl->handler, struct ov8830_device, ctrl_handler);
 	struct i2c_client *client = v4l2_get_subdevdata(&dev->sd);
 
+	pr_info("%s() called\n", __func__);
+
 	/* input_lock is taken by the control framework, so it
 	 * doesn't need to be taken here.
 	 */
