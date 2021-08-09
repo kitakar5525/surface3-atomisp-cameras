@@ -1438,6 +1438,8 @@ static int __ov8830_try_mbus_fmt(struct v4l2_subdev *sd,
 	int idx;
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 
+	pr_info("%s() called\n", __func__);
+
 	if (!fmt)
 		return -EINVAL;
 
@@ -1473,6 +1475,8 @@ static int __ov8830_s_mbus_fmt(struct v4l2_subdev *sd,
 	u16 hts, vts;
 	int ret;
 	const struct ov8830_resolution *res;
+
+	pr_info("%s() called\n", __func__);
 
 	ov8830_info = v4l2_get_subdev_hostdata(sd);
 	if (ov8830_info == NULL)
