@@ -1,10 +1,13 @@
 KVERSION := "$(shell uname -r)"
+KDIR := "/lib/modules/$(KVERSION)/build"
+ATOMISP_INC := "drivers/staging/media/atomisp/include"
+ccflags-y += -I $(KDIR)/$(ATOMISP_INC)
 
 obj-m += atomisp-ar0330/atomisp-ar0330.o
 obj-m += atomisp-ov883x/atomisp-ov883x.o
 
 all:
-	make -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+	make -C $(KDIR) M=$(PWD) modules
 
 clean:
-	make -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
+	make -C $(KDIR) M=$(PWD) clean
