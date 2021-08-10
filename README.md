@@ -10,6 +10,12 @@ References:
 
 You need to apply those patches first for atomisp to work on Surface 3.
 
+#### to build
+
+```bash
+make KDIR="/path/to/your/kernel_tree" ATOMISP_INC="drivers/staging/media/atomisp/include"
+```
+
 #### atomisp firmware file
 
 You need a firmware file, place it to `/lib/firmware/shisp_2401a0_v21.bin`
