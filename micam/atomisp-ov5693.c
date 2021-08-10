@@ -1959,6 +1959,7 @@ static int ov5693_s_config(struct v4l2_subdev *sd,
 	if (ret)
 		goto fail_csi_cfg;
 
+	pr_info("%s(): calling ov5693_detect()\n", __func__);
 	/* config & detect sensor */
 	ret = ov5693_detect(client);
 	if (ret) {
