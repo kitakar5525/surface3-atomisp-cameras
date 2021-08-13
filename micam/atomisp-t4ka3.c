@@ -2070,7 +2070,7 @@ static int t4ka3_probe(struct i2c_client *client,
 	dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	dev->pad.flags = MEDIA_PAD_FL_SOURCE;
 	dev->format.code = MEDIA_BUS_FMT_SGRBG10_1X10;
-	dev->sd.entity.function = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
+	dev->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
 	dev->flip = 0;
 
 	ret = media_entity_init(&dev->sd.entity, 1, &dev->pad, 0);
