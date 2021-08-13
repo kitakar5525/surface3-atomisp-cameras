@@ -1970,7 +1970,7 @@ static int ov8830_probe(struct i2c_client *client,
 
 	dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	dev->pad.flags = MEDIA_PAD_FL_SOURCE;
-	dev->sd.entity.type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
+	dev->sd.entity.function = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
 	dev->format.code = MEDIA_BUS_FMT_SBGGR10_1X10;
 
 	ret = v4l2_ctrl_handler_init(&dev->ctrl_handler, ARRAY_SIZE(ctrls) + 1);
