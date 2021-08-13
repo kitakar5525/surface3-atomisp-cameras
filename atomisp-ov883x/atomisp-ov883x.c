@@ -1995,7 +1995,7 @@ static int ov8830_probe(struct i2c_client *client,
 	dev->sd.ctrl_handler = &dev->ctrl_handler;
 	v4l2_ctrl_handler_setup(&dev->ctrl_handler);
 
-	ret = media_entity_init(&dev->sd.entity, 1, &dev->pad, 0);
+	ret = media_entity_pads_init(&dev->sd.entity, 1, &dev->pad);
 	if (ret) {
 		ov8830_remove(client);
 		return ret;
