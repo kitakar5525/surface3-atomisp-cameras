@@ -1019,7 +1019,7 @@ static int ar0330_probe(struct i2c_client *client,
 	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	ar0330->pad.flags = MEDIA_PAD_FL_SOURCE;
 	sd->entity.function = MEDIA_ENT_F_CAM_SENSOR;
-	ret = media_entity_init(&sd->entity, 1, &ar0330->pad, 0);
+	ret = media_entity_pads_init(&sd->entity, 1, &ar0330->pad);
 	if (ret < 0)
 		goto err_power_off;
 
