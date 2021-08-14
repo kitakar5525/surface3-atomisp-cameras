@@ -1245,16 +1245,13 @@ static int ov5693_q_focus_status(struct v4l2_subdev *sd, s32 *value)
 {
 	u32 status = 0;
 	struct ov5693_device *dev = to_ov5693_sensor(sd);
-	struct timespec temptime;
-	const struct timespec timedelay = {
-		0,
-		min((u32)abs(dev->number_of_steps) * DELAY_PER_STEP_NS,
-		(u32)DELAY_MAX_PER_STEP_NS),
-	};
+	ktime_t temptime;
+	ktime_t timedelay = ns_to_ktime(min_t(u32,
+			abs(dev->number_of_steps) * DELAY_PER_STEP_NS,
+			DELAY_MAX_PER_STEP_NS));
 
-	getnstimeofday(&temptime);
-	temptime = timespec_sub(temptime, (dev->timestamp_t_focus_abs));
-	if (timespec_compare(&temptime, &timedelay) <= 0) {
+	temptime = ktime_sub(ktime_get(), (dev->timestamp_t_focus_abs));
+	if (ktime_compare(temptime, timedelay) <= 0) {
 		status |= ATOMISP_FOCUS_STATUS_MOVING;
 		status |= ATOMISP_FOCUS_HP_IN_PROGRESS;
 	} else {
