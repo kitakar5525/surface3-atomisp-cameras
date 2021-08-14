@@ -296,12 +296,12 @@ static int op_dump_otp;
 struct ov5693_device *global_dev;
 
 
-static int ov5693_dump_otp(const char *val, struct kernel_param *kp);
+static int ov5693_dump_otp(const char *val, const struct kernel_param *kp);
 module_param_call(dumpotp, ov5693_dump_otp, param_get_uint,
 				&op_dump_otp, S_IRUGO | S_IWUSR);
 
 
-static int ov5693_dump_otp(const char *val, struct kernel_param *kp)
+static int ov5693_dump_otp(const char *val, const struct kernel_param *kp)
 {
 	int ret;
 	if (NULL != global_dev->otp_data) {
