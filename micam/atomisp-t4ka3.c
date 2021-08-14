@@ -59,14 +59,14 @@ static int op_dump_otp;
 struct t4ka3_device *global_dev;
 
 
-static int t4ka3_dump_otp(const char *val, struct kernel_param *kp);
+static int t4ka3_dump_otp(const char *val, const struct kernel_param *kp);
 module_param_call(dumpotp, t4ka3_dump_otp, param_get_uint,
 				&op_dump_otp, S_IRUGO | S_IWUSR);
 
 static int t4ka3_detect(struct i2c_client *client, u16 *id);
 
 
-static int t4ka3_dump_otp(const char *val, struct kernel_param *kp)
+static int t4ka3_dump_otp(const char *val, const struct kernel_param *kp)
 {
 	int ret;
 	if (NULL != global_dev->otp_raw_data) {
