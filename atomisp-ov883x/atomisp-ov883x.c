@@ -1381,7 +1381,8 @@ fail_power_off:
 }
 
 static int
-ov8830_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
+ov8830_enum_mbus_code(struct v4l2_subdev *sd,
+		       struct v4l2_subdev_state *sd_state,
 		       struct v4l2_subdev_mbus_code_enum *code)
 {
 	pr_info("%s() called\n", __func__);
@@ -1393,7 +1394,8 @@ ov8830_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg
 }
 
 static int
-ov8830_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
+ov8830_enum_frame_size(struct v4l2_subdev *sd,
+			struct v4l2_subdev_state *sd_state,
 			struct v4l2_subdev_frame_size_enum *fse)
 {
 	int index = fse->index;
@@ -1420,7 +1422,7 @@ ov8830_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cf
  * ov8830 frame intervals
  */
 static int ov8830_enum_frame_interval(struct v4l2_subdev *sd,
-				      struct v4l2_subdev_pad_config *cfg,
+				      struct v4l2_subdev_state *sd_state,
 				      struct v4l2_subdev_frame_interval_enum *fie)
 {
 	pr_info("%s() called\n", __func__);
@@ -1430,37 +1432,41 @@ static int ov8830_enum_frame_interval(struct v4l2_subdev *sd,
 
 static struct v4l2_mbus_framefmt *
 __ov8830_get_pad_format(struct ov8830_device *sensor,
-			 struct v4l2_subdev_pad_config *cfg, unsigned int pad,
+			 struct v4l2_subdev_state *sd_state, unsigned int pad,
 			 enum v4l2_subdev_format_whence which)
 {
 	pr_info("%s() called\n", __func__);
 
 	if (which == V4L2_SUBDEV_FORMAT_TRY)
-		return v4l2_subdev_get_try_format(&sensor->sd, cfg, pad);
+		return v4l2_subdev_get_try_format(&sensor->sd, sd_state, pad);
 
 	return &sensor->format;
 }
 
 static int
-ov8830_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
+ov8830_get_pad_format(struct v4l2_subdev *sd,
+		       struct v4l2_subdev_state *sd_state,
 		       struct v4l2_subdev_format *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 
 	pr_info("%s() called\n", __func__);
 
-	fmt->format = *__ov8830_get_pad_format(dev, cfg, fmt->pad, fmt->which);
+	fmt->format = *__ov8830_get_pad_format(dev, sd_state, fmt->pad,
+					       fmt->which);
 
 	return 0;
 }
 
 static int
-ov8830_set_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
+ov8830_set_pad_format(struct v4l2_subdev *sd,
+		       struct v4l2_subdev_state *sd_state,
 		       struct v4l2_subdev_format *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
-			__ov8830_get_pad_format(dev, cfg, fmt->pad, fmt->which);
+			__ov8830_get_pad_format(dev, sd_state, fmt->pad,
+						fmt->which);
 
 	pr_info("%s() called\n", __func__);
 
