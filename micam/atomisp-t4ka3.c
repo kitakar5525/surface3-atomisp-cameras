@@ -1422,13 +1422,12 @@ static int vendorid_proc_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, vendorid_proc_show, NULL);
 }
-static const struct file_operations vendorid_proc_fops = {
-	.owner = THIS_MODULE,
-	.open = vendorid_proc_open,
-	.read = seq_read,
-	.llseek = seq_lseek,
-	.release = single_release,
-};
+static const struct proc_ops vendorid_proc_ops = {
+	.proc_open = vendorid_proc_open,
+	.proc_read = seq_read,
+	.proc_lseek = seq_lseek,
+	.proc_release = single_release,
+ };
 
 static int t4ka3_vendorid_procfs_init(struct i2c_client *client)
 {
@@ -1439,7 +1438,7 @@ static int t4ka3_vendorid_procfs_init(struct i2c_client *client)
 	}
 
 	idfile = proc_create("backvid", 0644, iddir,
-				&vendorid_proc_fops);
+				&vendorid_proc_ops);
 	if (!idfile) {
 		dev_err(&client->dev, "Can't create file /proc/camera/backvid\n");
 		remove_proc_entry("camera", iddir);
