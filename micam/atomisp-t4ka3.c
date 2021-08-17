@@ -1749,7 +1749,7 @@ static int t4ka3_enum_mbus_fmt(struct v4l2_subdev *sd,
 
 static int
 t4ka3_enum_mbus_code(struct v4l2_subdev *sd,
-				struct v4l2_subdev_pad_config *cfg,
+				struct v4l2_subdev_state *sd_state,
 				struct v4l2_subdev_mbus_code_enum *code)
 {
 	if (code->index >= MAX_FMTS)
@@ -1761,7 +1761,7 @@ t4ka3_enum_mbus_code(struct v4l2_subdev *sd,
 
 static int
 t4ka3_enum_frame_size(struct v4l2_subdev *sd,
-				struct v4l2_subdev_pad_config *cfg,
+				struct v4l2_subdev_state *sd_state,
 				struct v4l2_subdev_frame_size_enum *fse)
 {
 	int index = fse->index;
@@ -1779,12 +1779,12 @@ t4ka3_enum_frame_size(struct v4l2_subdev *sd,
 
 static struct v4l2_mbus_framefmt *
 __t4ka3_get_pad_format(struct t4ka3_device *sensor, struct v4l2_subdev *sd,
-			 struct v4l2_subdev_pad_config *cfg, unsigned int pad,
+			 struct v4l2_subdev_state *sd_state, unsigned int pad,
 			 enum v4l2_subdev_format_whence which)
 {
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
-		return v4l2_subdev_get_try_format(sd, cfg, pad);
+		return v4l2_subdev_get_try_format(sd, sd_state, pad);
 	case V4L2_SUBDEV_FORMAT_ACTIVE:
 		return &sensor->format;
 	default:
@@ -1793,12 +1793,13 @@ __t4ka3_get_pad_format(struct t4ka3_device *sensor, struct v4l2_subdev *sd,
 }
 
 static int
-t4ka3_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
+t4ka3_get_pad_format(struct v4l2_subdev *sd,
+		       struct v4l2_subdev_state *sd_state,
 		       struct v4l2_subdev_format *fmt)
 {
 	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
-			__t4ka3_get_pad_format(dev, sd, cfg,
+			__t4ka3_get_pad_format(dev, sd, sd_state,
 						fmt->pad, fmt->which);
 
 	fmt->format = *format;
@@ -1807,7 +1808,8 @@ t4ka3_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
 }
 
 static int
-t4ka3_set_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
+t4ka3_set_pad_format(struct v4l2_subdev *sd,
+		       struct v4l2_subdev_state *sd_state,
 		       struct v4l2_subdev_format *fmt)
 {
 	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
