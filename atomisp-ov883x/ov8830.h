@@ -36,32 +36,6 @@
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
 
-#define to_drv201_device(_sd) (&(container_of(_sd, struct ov8830_device, sd) \
-				 ->drv201))
-
-#define DRV201_I2C_ADDR				0x0E
-#define DRV201_CONTROL				2
-#define DRV201_VCM_CURRENT			3
-#define DRV201_STATUS				5
-#define DRV201_MODE				6
-#define DRV201_VCM_FREQ				7
-
-#define DRV201_DEFAULT_VCM_FREQ			0xe6
-#define DRV201_MIN_DEFAULT_VCM_FREQ		0x00
-#define DRV201_MAX_DEFAULT_VCM_FREQ		0xff
-
-#define DRV201_MAX_FOCUS_POS			1023
-#define DRV201_MODE_LINEAR			2
-
-/* drv201 device structure */
-struct drv201_device {
-	bool initialized;		/* true if drv201 is detected */
-	s32 focus;			/* Current focus value */
-	struct timespec focus_time;	/* Time when focus was last time set */
-	__u8 buffer[4];			/* Used for i2c transactions */
-	const struct atomisp_platform_data *platform_data;
-};
-
 #define	OV8830_NAME	"ov8830"
 #define	OV8830_ADDR	0x36
 #define OV8830_ID	0x4b00
@@ -399,7 +373,6 @@ struct ov8830_device {
 	int exposure;
 	int gain;
 	u16 digital_gain;
-	struct drv201_device drv201;
 	struct mutex input_lock; /* serialize sensor's ioctl */
 
 	const struct ov8830_reg *basic_settings_list;
