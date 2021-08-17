@@ -853,19 +853,19 @@ static int __ov8830_s_power(struct v4l2_subdev *sd, int on)
 	if (on == 0) {
 		ov8830_uninit(sd);
 		ret = power_down(sd);
-		// r = drv201_power_down(sd);
-		// if (ret == 0)
-		// 	ret = r;
+		r = drv201_power_down(sd);
+		if (ret == 0)
+			ret = r;
 		dev->power = 0;
 	} else {
 		ret = power_up(sd);
 		if (ret)
 			return ret;
-		// ret = drv201_power_up(sd);
-		// if (ret) {
-		// 	power_down(sd);
-		// 	return ret;
-		// }
+		ret = drv201_power_up(sd);
+		if (ret) {
+			power_down(sd);
+			return ret;
+		}
 
 		dev->power = 1;
 
@@ -1662,8 +1662,8 @@ static int ov8830_s_ctrl(struct v4l2_ctrl *ctrl)
 	case V4L2_CID_TEST_PATTERN:
 		return ov8830_write_reg(client, OV8830_16BIT, 0x3070,
 					ctrl->val);
-	// case V4L2_CID_FOCUS_ABSOLUTE:
-	// 	return drv201_t_focus_abs(&dev->sd, ctrl->val);
+	case V4L2_CID_FOCUS_ABSOLUTE:
+		return drv201_t_focus_abs(&dev->sd, ctrl->val);
 	}
 
 	return -EINVAL; /* Should not happen. */
@@ -1676,7 +1676,6 @@ static int ov8830_g_ctrl(struct v4l2_ctrl *ctrl)
 
 	switch (ctrl->id) {
 	case V4L2_CID_FOCUS_STATUS: {
-#if 0
 		static const struct timespec move_time = {
 			/* The time required for focus motor to move the lens */
 			.tv_sec = 0,
@@ -1697,7 +1696,6 @@ static int ov8830_g_ctrl(struct v4l2_ctrl *ctrl)
 			ctrl->val = ATOMISP_FOCUS_STATUS_MOVING |
 				ATOMISP_FOCUS_HP_IN_PROGRESS;
 		}
-#endif
 		return 0;
 	}
 	case V4L2_CID_BIN_FACTOR_HORZ:
