@@ -2049,7 +2049,7 @@ static int ov5693_g_frame_interval(struct v4l2_subdev *sd,
 }
 
 static int ov5693_enum_mbus_code(struct v4l2_subdev *sd,
-				struct v4l2_subdev_pad_config *cfg,
+				struct v4l2_subdev_state *sd_state,
 				struct v4l2_subdev_mbus_code_enum *code)
 {
 	if (code->index >= MAX_FMTS)
@@ -2060,7 +2060,7 @@ static int ov5693_enum_mbus_code(struct v4l2_subdev *sd,
 }
 
 static int ov5693_enum_frame_size(struct v4l2_subdev *sd,
-				struct v4l2_subdev_pad_config *cfg,
+				struct v4l2_subdev_state *sd_state,
 				struct v4l2_subdev_frame_size_enum *fse)
 {
 	int index = fse->index;
@@ -2079,7 +2079,7 @@ static int ov5693_enum_frame_size(struct v4l2_subdev *sd,
 
 static struct v4l2_mbus_framefmt *
 __ov5693_get_pad_format(struct ov5693_device *sensor, struct v4l2_subdev *sd,
-			struct v4l2_subdev_pad_config *cfg, unsigned int pad,
+			struct v4l2_subdev_state *sd_state, unsigned int pad,
 			enum v4l2_subdev_format_whence which)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(&sensor->sd);
@@ -2092,7 +2092,7 @@ __ov5693_get_pad_format(struct ov5693_device *sensor, struct v4l2_subdev *sd,
 
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
-		return v4l2_subdev_get_try_format(sd, cfg, pad);
+		return v4l2_subdev_get_try_format(sd, sd_state, pad);
 	case V4L2_SUBDEV_FORMAT_ACTIVE:
 		return &sensor->format;
 	default:
@@ -2101,12 +2101,13 @@ __ov5693_get_pad_format(struct ov5693_device *sensor, struct v4l2_subdev *sd,
 }
 
 static int ov5693_get_pad_format(struct v4l2_subdev *sd,
-				struct v4l2_subdev_pad_config *cfg,
+				struct v4l2_subdev_state *sd_state,
 				struct v4l2_subdev_format *fmt)
 {
 	struct ov5693_device *snr = to_ov5693_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
-			__ov5693_get_pad_format(snr, sd, cfg, fmt->pad, fmt->which);
+			__ov5693_get_pad_format(snr, sd, sd_state, fmt->pad,
+						fmt->which);
 	if (!format)
 		return -EINVAL;
 
@@ -2115,7 +2116,7 @@ static int ov5693_get_pad_format(struct v4l2_subdev *sd,
 }
 
 static int ov5693_set_pad_format(struct v4l2_subdev *sd,
-				struct v4l2_subdev_pad_config *cfg,
+				struct v4l2_subdev_state *sd_state,
 				struct v4l2_subdev_format *fmt)
 {
 	struct ov5693_device *snr = to_ov5693_sensor(sd);
