@@ -377,7 +377,7 @@ ar0330_find_best_fit(struct v4l2_subdev_format *fmt)
 }
 
 static int ar0330_set_fmt(struct v4l2_subdev *sd,
-			  struct v4l2_subdev_pad_config *cfg,
+			  struct v4l2_subdev_state *sd_state,
 			  struct v4l2_subdev_format *fmt)
 {
 	struct ar0330 *ar0330 = to_ar0330(sd);
@@ -392,7 +392,7 @@ static int ar0330_set_fmt(struct v4l2_subdev *sd,
 	fmt->format.height = mode->height;
 	fmt->format.field = V4L2_FIELD_NONE;
 	if (fmt->which == V4L2_SUBDEV_FORMAT_TRY) {
-		*v4l2_subdev_get_try_format(sd, cfg, fmt->pad) = fmt->format;
+		*v4l2_subdev_get_try_format(sd, sd_state, fmt->pad) = fmt->format;
 	} else {
 		ar0330->cur_mode = mode;
 		h_blank = mode->hts_def - mode->width;
@@ -410,7 +410,7 @@ static int ar0330_set_fmt(struct v4l2_subdev *sd,
 }
 
 static int ar0330_get_fmt(struct v4l2_subdev *sd,
-			  struct v4l2_subdev_pad_config *cfg,
+			  struct v4l2_subdev_state *sd_state,
 			  struct v4l2_subdev_format *fmt)
 {
 	struct ar0330 *ar0330 = to_ar0330(sd);
@@ -418,7 +418,8 @@ static int ar0330_get_fmt(struct v4l2_subdev *sd,
 
 	mutex_lock(&ar0330->mutex);
 	if (fmt->which == V4L2_SUBDEV_FORMAT_TRY) {
-		fmt->format = *v4l2_subdev_get_try_format(sd, cfg, fmt->pad);
+		fmt->format = *v4l2_subdev_get_try_format(sd, sd_state,
+							  fmt->pad);
 	} else {
 		fmt->format.width = mode->width;
 		fmt->format.height = mode->height;
@@ -431,7 +432,7 @@ static int ar0330_get_fmt(struct v4l2_subdev *sd,
 }
 
 static int ar0330_enum_mbus_code(struct v4l2_subdev *sd,
-				 struct v4l2_subdev_pad_config *cfg,
+				 struct v4l2_subdev_state *sd_state,
 				 struct v4l2_subdev_mbus_code_enum *code)
 {
 	if (code->index != 0)
@@ -442,7 +443,7 @@ static int ar0330_enum_mbus_code(struct v4l2_subdev *sd,
 }
 
 static int ar0330_enum_frame_sizes(struct v4l2_subdev *sd,
-				   struct v4l2_subdev_pad_config *cfg,
+				   struct v4l2_subdev_state *sd_state,
 				   struct v4l2_subdev_frame_size_enum *fse)
 {
 	if (fse->index >= ARRAY_SIZE(supported_modes))
@@ -698,7 +699,7 @@ static int ar0330_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
 	struct ar0330 *ar0330 = to_ar0330(sd);
 	struct v4l2_mbus_framefmt *try_fmt =
-				v4l2_subdev_get_try_format(sd, fh->pad, 0);
+				v4l2_subdev_get_try_format(sd, fh->state, 0);
 	const struct ar0330_mode *def_mode = &supported_modes[0];
 
 	mutex_lock(&ar0330->mutex);
@@ -714,7 +715,7 @@ static int ar0330_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 }
 
 static int ar0330_enum_frame_interval(struct v4l2_subdev *sd,
-				 struct v4l2_subdev_pad_config *cfg,
+				 struct v4l2_subdev_state *sd_state,
 				 struct v4l2_subdev_frame_interval_enum *fie)
 {
 	if (fie->index >= ARRAY_SIZE(supported_modes))
