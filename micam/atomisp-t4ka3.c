@@ -1820,30 +1820,6 @@ t4ka3_set_pad_format(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int
-t4ka3_s_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *param)
-{
-	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
-	dev->run_mode = param->parm.capture.capturemode;
-
-	mutex_lock(&dev->input_lock);
-	switch (dev->run_mode) {
-	case CI_MODE_VIDEO:
-		t4ka3_res = t4ka3_res_video;
-		N_RES = N_RES_VIDEO;
-		break;
-	case CI_MODE_STILL_CAPTURE:
-		t4ka3_res = t4ka3_res_still;
-		N_RES = N_RES_STILL;
-		break;
-	default:
-		t4ka3_res = t4ka3_res_preview;
-		N_RES = N_RES_PREVIEW;
-	}
-	mutex_unlock(&dev->input_lock);
-	return 0;
-}
-
 int
 t4ka3_g_frame_interval(struct v4l2_subdev *sd,
 				struct v4l2_subdev_frame_interval *interval)
@@ -1944,7 +1920,6 @@ static const struct v4l2_subdev_video_ops t4ka3_video_ops = {
 	.s_stream = t4ka3_s_stream,
 	.enum_framesizes = t4ka3_enum_framesizes,
 	.enum_frameintervals = t4ka3_enum_frameintervals,
-	.s_parm = t4ka3_s_parm,
 	.g_mbus_fmt = t4ka3_g_mbus_fmt,
 	.enum_mbus_fmt = t4ka3_enum_mbus_fmt,
 	.g_frame_interval = t4ka3_g_frame_interval,
