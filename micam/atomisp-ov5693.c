@@ -1264,162 +1264,148 @@ static int ov5693_q_focus_status(struct v4l2_subdev *sd, s32 *value)
 	return 0;
 }
 
-struct ov5693_control ov5693_controls[] = {
+struct v4l2_ctrl_config ov5693_controls[] = {
 	{
-		.qc = {
-			.id = V4L2_CID_EXPOSURE_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "exposure",
-			.minimum = 0x0,
-			.maximum = 0xffff,
-			.step = 0x01,
-			.default_value = 0x00,
-			.flags = 0,
-		},
-		.query = ov5693_q_exposure,
+		.ops = &ov5693_ctrl_ops,
+		.id = V4L2_CID_EXPOSURE_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "exposure",
+		.min = 0x0,
+		.max = 0xffff,
+		.step = 0x01,
+		.def = 0x00,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FOCAL_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focal length",
-			.minimum = OV5693_FOCAL_LENGTH_DEFAULT,
-			.maximum = OV5693_FOCAL_LENGTH_DEFAULT,
-			.step = 0x01,
-			.default_value = OV5693_FOCAL_LENGTH_DEFAULT,
-			.flags = 0,
-		},
-		.query = ov5693_g_focal,
+		.ops = &ov5693_ctrl_ops,
+		.id = V4L2_CID_FOCAL_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "focal length",
+		.min = OV5693_FOCAL_LENGTH_DEFAULT,
+		.max = OV5693_FOCAL_LENGTH_DEFAULT,
+		.step = 0x01,
+		.def = OV5693_FOCAL_LENGTH_DEFAULT,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FNUMBER_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "f-number",
-			.minimum = OV5693_F_NUMBER_DEFAULT,
-			.maximum = OV5693_F_NUMBER_DEFAULT,
-			.step = 0x01,
-			.default_value = OV5693_F_NUMBER_DEFAULT,
-			.flags = 0,
-		},
-		.query = ov5693_g_fnumber,
+		.ops = &ov5693_ctrl_ops,
+		.id = V4L2_CID_FNUMBER_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "f-number",
+		.min = OV5693_F_NUMBER_DEFAULT,
+		.max = OV5693_F_NUMBER_DEFAULT,
+		.step = 0x01,
+		.def = OV5693_F_NUMBER_DEFAULT,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FNUMBER_RANGE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "f-number range",
-			.minimum = OV5693_F_NUMBER_RANGE,
-			.maximum =  OV5693_F_NUMBER_RANGE,
-			.step = 0x01,
-			.default_value = OV5693_F_NUMBER_RANGE,
-			.flags = 0,
-		},
-		.query = ov5693_g_fnumber_range,
+		.ops = &ov5693_ctrl_ops,
+		.id = V4L2_CID_FNUMBER_RANGE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "f-number range",
+		.min = OV5693_F_NUMBER_RANGE,
+		.max =  OV5693_F_NUMBER_RANGE,
+		.step = 0x01,
+		.def = OV5693_F_NUMBER_RANGE,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FOCUS_STATUS,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focus status",
-			.minimum = 0,
-			.maximum = 100, /* allow enum to grow in the future */
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.query = ov5693_q_focus_status,
+		.ops = &ov5693_ctrl_ops,
+		.id = V4L2_CID_FOCUS_STATUS,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "focus status",
+		.min = 0,
+		.max = 100, /* allow enum to grow in the future */
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_BIN_FACTOR_HORZ,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "horizontal binning factor",
-			.minimum = 0,
-			.maximum = OV5693_BIN_FACTOR_MAX,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.query = ov5693_g_bin_factor_x,
+		.ops = &ov5693_ctrl_ops,
+		.id = V4L2_CID_BIN_FACTOR_HORZ,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "horizontal binning factor",
+		.min = 0,
+		.max = OV5693_BIN_FACTOR_MAX,
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_BIN_FACTOR_VERT,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "vertical binning factor",
-			.minimum = 0,
-			.maximum = OV5693_BIN_FACTOR_MAX,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.query = ov5693_g_bin_factor_y,
+		.ops = &ov5693_ctrl_ops,
+		.id = V4L2_CID_BIN_FACTOR_VERT,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "vertical binning factor",
+		.min = 0,
+		.max = OV5693_BIN_FACTOR_MAX,
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 	},
 };
-#define N_CONTROLS (ARRAY_SIZE(ov5693_controls))
 
-static struct ov5693_control *ov5693_find_control(u32 id)
+static int ov5693_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
 {
-	int i;
+	struct ov5693_device *dev =
+	    container_of(ctrl->handler, struct ov5693_device, ctrl_handler);
+	int ret = 0;
 
-	for (i = 0; i < N_CONTROLS; i++)
-		if (ov5693_controls[i].qc.id == id)
-			return &ov5693_controls[i];
-	return NULL;
-}
-
-static int ov5693_queryctrl(struct v4l2_subdev *sd, struct v4l2_queryctrl *qc)
-{
-	struct ov5693_control *ctrl = ov5693_find_control(qc->id);
-	struct ov5693_device *dev = to_ov5693_sensor(sd);
-
-	if (ctrl == NULL)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	*qc = ctrl->qc;
-	mutex_unlock(&dev->input_lock);
-
-	return 0;
-}
-
-/* imx control set/get */
-static int ov5693_g_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
-{
-	struct ov5693_control *s_ctrl;
-	struct ov5693_device *dev = to_ov5693_sensor(sd);
-	int ret;
-
-	if (!ctrl)
-		return -EINVAL;
-
-	s_ctrl = ov5693_find_control(ctrl->id);
-	if ((s_ctrl == NULL) || (s_ctrl->query == NULL))
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	ret = s_ctrl->query(sd, &ctrl->value);
-	mutex_unlock(&dev->input_lock);
+	switch (ctrl->id) {
+	case V4L2_CID_EXPOSURE_ABSOLUTE:
+		ret = ov5693_q_exposure(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FOCAL_ABSOLUTE:
+		ret = ov5693_g_focal(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FNUMBER_ABSOLUTE:
+		ret = ov5693_g_fnumber(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FNUMBER_RANGE:
+		ret = ov5693_g_fnumber_range(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FOCUS_STATUS:
+		ret = ov5693_q_focus_status(&dev->sd, &ctrl->val);
+		/*
+		 * This break was not here on the initial upstream
+		 * commit (by mistake?). And later added on commit
+		 * 9e7b319e1d1e ("staging: atomisp: fix missing break in
+		 * switch statement")
+		 *
+		 * TODO: Check if this break is needed. I believe it is
+		 * though, but just in case.
+		 */
+		break;
+	case V4L2_CID_BIN_FACTOR_HORZ:
+		ret = ov5693_g_bin_factor_x(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_BIN_FACTOR_VERT:
+		ret = ov5693_g_bin_factor_y(&dev->sd, &ctrl->val);
+		break;
+	default:
+		ret = -EINVAL;
+	}
 
 	return ret;
 }
 
-static int ov5693_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
+static int ov5693_s_ctrl(struct v4l2_ctrl *ctrl)
 {
-	struct ov5693_control *octrl = ov5693_find_control(ctrl->id);
-	struct ov5693_device *dev = to_ov5693_sensor(sd);
-	int ret;
+	struct ov5693_device *dev =
+	    container_of(ctrl->handler, struct ov5693_device, ctrl_handler);
+	struct i2c_client *client = v4l2_get_subdevdata(&dev->sd);
+	int ret = 0;
 
-	if ((octrl == NULL) || (octrl->tweak == NULL))
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	ret = octrl->tweak(sd, ctrl->value);
-	mutex_unlock(&dev->input_lock);
-
+	switch (ctrl->id) {
+	default:
+		ret = -EINVAL;
+	}
 	return ret;
 }
+
+static const struct v4l2_ctrl_ops ov5693_ctrl_ops = {
+	.g_volatile_ctrl = ov5693_g_volatile_ctrl,
+	.s_ctrl = ov5693_s_ctrl,
+};
 
 static int ov5693_init(struct v4l2_subdev *sd)
 {
@@ -2089,9 +2075,6 @@ static const struct v4l2_subdev_video_ops ov5693_video_ops = {
 
 static const struct v4l2_subdev_core_ops ov5693_core_ops = {
 	.s_power = ov5693_s_power,
-	.queryctrl = ov5693_queryctrl,
-	.g_ctrl = ov5693_g_ctrl,
-	.s_ctrl = ov5693_s_ctrl,
 	.ioctl = ov5693_ioctl,
 };
 
@@ -2119,6 +2102,27 @@ static int ov5693_remove(struct i2c_client *client)
 	v4l2_device_unregister_subdev(sd);
 	atomisp_gmin_remove_subdev(sd);
 	media_entity_cleanup(&dev->sd.entity);
+	v4l2_ctrl_handler_free(&dev->ctrl_handler);
+
+	return 0;
+}
+
+static int ov5693_init_controls(struct ov5693_device *dev)
+{
+	unsigned int i;
+
+	v4l2_ctrl_handler_init(&dev->ctrl_handler,
+			       ARRAY_SIZE(ov5693_controls));
+
+	for (i = 0; i < ARRAY_SIZE(ov5693_controls); i++)
+		v4l2_ctrl_new_custom(&dev->ctrl_handler, &ov5693_controls[i],
+				     NULL);
+	if (dev->ctrl_handler.error)
+		return dev->ctrl_handler.error;
+
+	/* Use same lock for controls as for everything else. */
+	dev->ctrl_handler.lock = &dev->input_lock;
+	dev->sd.ctrl_handler = &dev->ctrl_handler;
 
 	return 0;
 }
@@ -2176,6 +2180,12 @@ static int ov5693_probe(struct i2c_client *client,
 	dev->pad.flags = MEDIA_PAD_FL_SOURCE;
 	dev->format.code = MEDIA_BUS_FMT_SBGGR10_1X10;
 	dev->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
+
+	ret = ov5693_init_controls(dev);
+	if (ret) {
+		ov5693_remove(client);
+		return ret;
+	}
 
 	ret = media_entity_pads_init(&dev->sd.entity, 1, &dev->pad);
 	if (ret)

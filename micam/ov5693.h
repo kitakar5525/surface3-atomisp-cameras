@@ -32,6 +32,7 @@
 #include <media/v4l2-device.h>
 #include <linux/v4l2-mediabus.h>
 #include <media/media-entity.h>
+#include <media/v4l2-ctrls.h>
 
 #include <linux/atomisp_platform.h>
 
@@ -213,12 +214,6 @@ struct ov5693_format {
 	struct ov5693_reg *regs;
 };
 
-struct ov5693_control {
-	struct v4l2_queryctrl qc;
-	int (*query)(struct v4l2_subdev *sd, s32 *value);
-	int (*tweak)(struct v4l2_subdev *sd, s32 value);
-};
-
 enum vcm_type {
 	VCM_UNKNOWN,
 	VCM_AD5823,
@@ -247,6 +242,8 @@ struct ov5693_device {
 	u8 type;
 	bool vcm_update;
 	enum vcm_type vcm;
+
+	struct v4l2_ctrl_handler ctrl_handler;
 };
 
 enum ov5693_tok_type {
