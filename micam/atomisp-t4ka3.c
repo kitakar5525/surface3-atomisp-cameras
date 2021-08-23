@@ -1506,17 +1506,6 @@ static int t4ka3_s_stream(struct v4l2_subdev *sd, int enable)
 	return 0;
 }
 
-static int t4ka3_enum_mbus_fmt(struct v4l2_subdev *sd,
-					unsigned int index,
-				 u32 *code)
-{
-	if (index >= MAX_FMTS)
-		return -EINVAL;
-
-	*code = MEDIA_BUS_FMT_SGRBG10_1X10;
-	return 0;
-}
-
 static int
 t4ka3_enum_mbus_code(struct v4l2_subdev *sd,
 				struct v4l2_subdev_state *sd_state,
@@ -1861,7 +1850,6 @@ static const struct v4l2_subdev_video_ops t4ka3_video_ops = {
 	.s_mbus_fmt = t4ka3_set_mbus_fmt,
 	.s_stream = t4ka3_s_stream,
 	.g_mbus_fmt = t4ka3_g_mbus_fmt,
-	.enum_mbus_fmt = t4ka3_enum_mbus_fmt,
 	.g_frame_interval = t4ka3_g_frame_interval,
 };
 
