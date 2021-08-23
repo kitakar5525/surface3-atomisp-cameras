@@ -1083,177 +1083,149 @@ static int t4ka3_t_focus_mode(struct v4l2_subdev *sd, s32 value)
 	return ret;
 }
 
-static struct t4ka3_control t4ka3_controls[] = {
+struct v4l2_ctrl_config t4ka3_controls[] = {
 	{
-		.qc = {
-			.id = V4L2_CID_EXPOSURE_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "exposure",
-			.minimum = 0x0,
-			.maximum = 0xffff,
-			.step = 0x01,
-			.default_value = 0x00,
-			.flags = 0,
-		},
-		.query = t4ka3_q_exposure,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_EXPOSURE_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "exposure",
+		.min = 0x0,
+		.max = 0xffff,
+		.step = 0x01,
+		.def = 0x00,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FOCUS_STATUS,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focus status",
-			.minimum = 0,
-			.maximum = 100, /* allow enum to grow in the future */
-			.step = 1,
-			.default_value = 0,
-			.flags = V4L2_CTRL_FLAG_READ_ONLY |
-				V4L2_CTRL_FLAG_VOLATILE,
-		},
-		.query = t4ka3_q_focus_status,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_FOCUS_STATUS,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "focus status",
+		.min = 0,
+		.max = 100, /* allow enum to grow in the future */
+		.step = 1,
+		.def = 0,
+		.flags = V4L2_CTRL_FLAG_READ_ONLY |
+			 V4L2_CTRL_FLAG_VOLATILE,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FOCUS_RELATIVE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focus move relative",
-			.minimum = 0,
-			.maximum = 1023,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.tweak = t4ka3_t_focus_rel,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_FOCUS_RELATIVE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "focus move relative",
+		.min = 0,
+		.max = 1023,
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FOCUS_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focus move absolute",
-			.minimum = 0,
-			.maximum = 1023,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.tweak = t4ka3_t_focus_abs,
-		.query = t4ka3_q_focus_abs,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_FOCUS_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "focus move absolute",
+		.min = 0,
+		.max = 1023,
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FOCUS_AUTO,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "auto focus",
-			.minimum = 0,
-			.maximum = 0xffff,
-			.step = 1,
-			.default_value = 0,
-		},
-		.tweak = t4ka3_t_focus_mode,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_FOCUS_AUTO,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "auto focus",
+		.min = 0,
+		.max = 0xffff,
+		.step = 1,
+		.def = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_TEST_PATTERN,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "Test pattern",
-			.minimum = 0,
-			.maximum = 0xffff,
-			.step = 1,
-			.default_value = 0,
-		},
-		.tweak = t4ka3_test_pattern,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_TEST_PATTERN,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "Test pattern",
+		.min = 0,
+		.max = 0xffff,
+		.step = 1,
+		.def = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_VFLIP,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "Image v-Flip",
-			.minimum = 0,
-			.maximum = 1,
-			.step = 1,
-			.default_value = 0,
-		},
-		.tweak = t4ka3_t_vflip,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_VFLIP,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "Image v-Flip",
+		.min = 0,
+		.max = 1,
+		.step = 1,
+		.def = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_HFLIP,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "Image h-Flip",
-			.minimum = 0,
-			.maximum = 1,
-			.step = 1,
-			.default_value = 0,
-		},
-		.tweak = t4ka3_t_hflip,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_HFLIP,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "Image h-Flip",
+		.min = 0,
+		.max = 1,
+		.step = 1,
+		.def = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FOCAL_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focal length",
-			.minimum = T4KA3_FOCAL_LENGTH_DEFAULT,
-			.maximum = T4KA3_FOCAL_LENGTH_DEFAULT,
-			.step = 0x01,
-			.default_value = T4KA3_FOCAL_LENGTH_DEFAULT,
-			.flags = 0,
-		},
-		.query = t4ka3_g_focal,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_FOCAL_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "focal length",
+		.min = T4KA3_FOCAL_LENGTH_DEFAULT,
+		.max = T4KA3_FOCAL_LENGTH_DEFAULT,
+		.step = 0x01,
+		.def = T4KA3_FOCAL_LENGTH_DEFAULT,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FNUMBER_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "f-number",
-			.minimum = T4KA3_F_NUMBER_DEFAULT,
-			.maximum = T4KA3_F_NUMBER_DEFAULT,
-			.step = 0x01,
-			.default_value = T4KA3_F_NUMBER_DEFAULT,
-			.flags = 0,
-		},
-		.query = t4ka3_g_fnumber,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_FNUMBER_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "f-number",
+		.min = T4KA3_F_NUMBER_DEFAULT,
+		.max = T4KA3_F_NUMBER_DEFAULT,
+		.step = 0x01,
+		.def = T4KA3_F_NUMBER_DEFAULT,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FNUMBER_RANGE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "f-number range",
-			.minimum = T4KA3_F_NUMBER_RANGE,
-			.maximum =  T4KA3_F_NUMBER_RANGE,
-			.step = 0x01,
-			.default_value = T4KA3_F_NUMBER_RANGE,
-			.flags = 0,
-		},
-		.query = t4ka3_g_fnumber_range,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_FNUMBER_RANGE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "f-number range",
+		.min = T4KA3_F_NUMBER_RANGE,
+		.max =  T4KA3_F_NUMBER_RANGE,
+		.step = 0x01,
+		.def = T4KA3_F_NUMBER_RANGE,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_BIN_FACTOR_HORZ,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "horizontal binning factor",
-			.minimum = 0,
-			.maximum = T4KA3_BIN_FACTOR_MAX,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.query = t4ka3_g_bin_factor_x,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_BIN_FACTOR_HORZ,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "horizontal binning factor",
+		.min = 0,
+		.max = T4KA3_BIN_FACTOR_MAX,
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_BIN_FACTOR_VERT,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "vertical binning factor",
-			.minimum = 0,
-			.maximum = T4KA3_BIN_FACTOR_MAX,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.query = t4ka3_g_bin_factor_y,
+		.ops = &t4ka3_ctrl_ops,
+		.id = V4L2_CID_BIN_FACTOR_VERT,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "vertical binning factor",
+		.min = 0,
+		.max = T4KA3_BIN_FACTOR_MAX,
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 	},
 };
-#define N_CONTROLS (ARRAY_SIZE(t4ka3_controls))
 
 static long __t4ka3_set_exposure(struct v4l2_subdev *sd,
 					u16 coarse_itg,
@@ -1396,17 +1368,6 @@ static long t4ka3_ioctl(struct v4l2_subdev *sd,
 		return -EINVAL;
 	}
 	return 0;
-}
-
-static struct t4ka3_control *t4ka3_find_control(__u32 id)
-{
-	int i;
-
-	for (i = 0; i < N_CONTROLS; i++) {
-		if (t4ka3_controls[i].qc.id == id)
-			return &t4ka3_controls[i];
-	}
-	return NULL;
 }
 
 static u8 vid;
@@ -1559,50 +1520,47 @@ fail_detect:
 	return ret;
 }
 
-static int t4ka3_queryctrl(struct v4l2_subdev *sd,
-		struct v4l2_queryctrl *qc)
+static int t4ka3_s_ctrl(struct v4l2_ctrl *ctrl)
 {
-	struct t4ka3_control *ctrl = t4ka3_find_control(qc->id);
-	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
+	struct t4ka3_device *dev =
+	    container_of(ctrl->handler, struct t4ka3_device, ctrl_handler);
+	struct i2c_client *client = v4l2_get_subdevdata(&dev->sd);
+	int ret = 0;
 
-	if (ctrl == NULL)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	*qc = ctrl->qc;
-	mutex_unlock(&dev->input_lock);
-
-	return 0;
-}
-
-static int t4ka3_g_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
-{
-	struct t4ka3_control *octrl = t4ka3_find_control(ctrl->id);
-	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
-	int ret;
-
-	if (octrl == NULL)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	ret = octrl->query(sd, &ctrl->value);
-	mutex_unlock(&dev->input_lock);
-
-	return ret;
-}
-
-static int t4ka3_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
-{
-	struct t4ka3_control *octrl = t4ka3_find_control(ctrl->id);
-	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
-	int ret;
-
-	if (!octrl || !octrl->tweak)
-		return -EINVAL;
-	mutex_lock(&dev->input_lock);
-	ret = octrl->tweak(sd, ctrl->value);
-	mutex_unlock(&dev->input_lock);
-
+	switch (ctrl->id) {
+	case V4L2_CID_FOCUS_RELATIVE:
+		dev_dbg(&client->dev, "%s: V4L2_CID_FOCUS_RELATIVE: %d\n",
+			__func__, ctrl->val);
+		ret = t4ka3_t_focus_rel(&dev->sd, ctrl->val);
+		break;
+	case V4L2_CID_FOCUS_ABSOLUTE:
+		dev_dbg(&client->dev, "%s: V4L2_CID_FOCUS_ABSOLUTE: %d\n",
+			__func__, ctrl->val);
+		ret = t4ka3_t_focus_abs(&dev->sd, ctrl->val);
+		break;
+	case V4L2_CID_FOCUS_AUTO:
+		dev_dbg(&client->dev, "%s: V4L2_CID_FOCUS_AUTO: %d\n",
+			__func__, ctrl->val);
+		ret = t4ka3_t_focus_mode(&dev->sd, ctrl->val);
+		break;
+	case V4L2_CID_TEST_PATTERN:
+		dev_dbg(&client->dev, "%s: V4L2_CID_TEST_PATTERN: %d\n",
+			__func__, ctrl->val);
+		ret = t4ka3_test_pattern(&dev->sd, ctrl->val);
+		break;
+	case V4L2_CID_VFLIP:
+		dev_dbg(&client->dev, "%s: V4L2_CID_VFLIP: %d\n",
+			__func__, ctrl->val);
+		ret = t4ka3_t_vflip(&dev->sd, ctrl->val);
+		break;
+	case V4L2_CID_HFLIP:
+		dev_dbg(&client->dev, "%s: V4L2_CID_HFLIP: %d\n",
+			__func__, ctrl->val);
+		ret = t4ka3_t_hflip(&dev->sd, ctrl->val);
+		break;
+	default:
+		ret = -EINVAL;
+	}
 	return ret;
 }
 
@@ -1875,27 +1833,55 @@ static int t4ka3_g_skip_frames(struct v4l2_subdev *sd, u32 *frames)
 
 static int t4ka3_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
 {
-	struct t4ka3_device *dev = container_of(ctrl->handler,
-	struct t4ka3_device, ctrl_handler);
+	struct t4ka3_device *dev =
+	    container_of(ctrl->handler, struct t4ka3_device, ctrl_handler);
 	unsigned int val;
+	int ret = 0;
 
 	switch (ctrl->id) {
 	case V4L2_CID_LINK_FREQ:
 		val = t4ka3_res[dev->fmt_idx].mipi_freq;
-		if (val == 0)
-			return -EINVAL;
+		if (val == 0) {
+			ret = -EINVAL;
+			break;
+		}
 
 		ctrl->val = val * 1000;	/* To Hz */
 		break;
+	case V4L2_CID_EXPOSURE_ABSOLUTE:
+		ret = t4ka3_q_exposure(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FOCUS_STATUS:
+		ret = t4ka3_q_focus_status(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FOCUS_ABSOLUTE:
+		ret = t4ka3_q_focus_abs(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FOCAL_ABSOLUTE:
+		ret = t4ka3_g_focal(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FNUMBER_ABSOLUTE:
+		ret = t4ka3_g_fnumber(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FNUMBER_RANGE:
+		ret = t4ka3_g_fnumber_range(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_BIN_FACTOR_HORZ:
+		ret = t4ka3_g_bin_factor_x(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_BIN_FACTOR_VERT:
+		ret = t4ka3_g_bin_factor_y(&dev->sd, &ctrl->val);
+		break;
 	default:
-		return -EINVAL;
+		ret = -EINVAL;
 	}
 
-	return 0;
+	return ret;
 }
 
 static struct v4l2_ctrl_ops t4ka3_ctrl_ops = {
 	.g_volatile_ctrl = t4ka3_g_volatile_ctrl,
+	.s_ctrl = t4ka3_s_ctrl,
 };
 
 static const struct v4l2_ctrl_config v4l2_ctrl_link_freq = {
@@ -1926,9 +1912,6 @@ static const struct v4l2_subdev_video_ops t4ka3_video_ops = {
 };
 
 static const struct v4l2_subdev_core_ops t4ka3_core_ops = {
-	.queryctrl = t4ka3_queryctrl,
-	.g_ctrl = t4ka3_g_ctrl,
-	.s_ctrl = t4ka3_s_ctrl,
 	.ioctl = t4ka3_ioctl,
 	.s_power = t4ka3_s_power,
 	.init = t4ka3_init,
@@ -1974,21 +1957,27 @@ static int t4ka3_remove(struct i2c_client *client)
 	media_entity_cleanup(&dev->sd.entity);
 	atomisp_gmin_remove_subdev(sd);
 	t4ka3_vendorid_procfs_uninit();
+	v4l2_ctrl_handler_free(&dev->ctrl_handler);
 
 	return 0;
 }
 
-#if 0
-static int __t4ka3_init_ctrl_handler(struct t4ka3_device *dev)
+static int t4ka3_init_controls(struct t4ka3_device *dev)
 {
 	struct v4l2_ctrl_handler *hdl;
+	unsigned int i;
 
 	hdl = &dev->ctrl_handler;
 
-	v4l2_ctrl_handler_init(&dev->ctrl_handler, 3);
+	v4l2_ctrl_handler_init(&dev->ctrl_handler,
+			       3 + ARRAY_SIZE(t4ka3_controls));
 
 	dev->link_freq = v4l2_ctrl_new_custom(&dev->ctrl_handler,
 				&v4l2_ctrl_link_freq, NULL);
+
+	for (i = 0; i < ARRAY_SIZE(t4ka3_controls); i++)
+		v4l2_ctrl_new_custom(&dev->ctrl_handler, &t4ka3_controls[i],
+				     NULL);
 
 	if (dev->ctrl_handler.error || dev->link_freq == NULL)
 		return dev->ctrl_handler.error;
@@ -1996,7 +1985,6 @@ static int __t4ka3_init_ctrl_handler(struct t4ka3_device *dev)
 	dev->sd.ctrl_handler = hdl;
 	return 0;
 }
-#endif
 
 static int t4ka3_probe(struct i2c_client *client,
 			 const struct i2c_device_id *id)
@@ -2048,6 +2036,12 @@ static int t4ka3_probe(struct i2c_client *client,
 	dev->format.code = MEDIA_BUS_FMT_SGRBG10_1X10;
 	dev->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
 	dev->flip = 0;
+
+	ret = t4ka3_init_controls(dev);
+	if (ret) {
+		t4ka3_remove(client);
+		return ret;
+	}
 
 	ret = media_entity_pads_init(&dev->sd.entity, 1, &dev->pad);
 	if (ret)

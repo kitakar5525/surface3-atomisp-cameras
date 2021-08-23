@@ -338,12 +338,6 @@ struct t4ka3_resolution {
 	int mipi_freq;
 };
 
-struct t4ka3_control {
-	struct v4l2_queryctrl qc;
-	int (*query)(struct v4l2_subdev *sd, s32 *value);
-	int (*tweak)(struct v4l2_subdev *sd, int value);
-};
-
 /* init settings */
 static struct t4ka3_reg const t4ka3_init_config[] = {
 	{T4KA3_8BIT, 0x4136, 0x13},
