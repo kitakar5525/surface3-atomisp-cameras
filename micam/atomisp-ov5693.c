@@ -1651,8 +1651,8 @@ static int get_resolution_index(int w, int h)
 	return -EPERM;
 }
 
-static int ov5693_try_mbus_fmt(struct v4l2_subdev *sd,
-			struct v4l2_mbus_framefmt *fmt)
+static int __ov5693_try_mbus_fmt(struct v4l2_subdev *sd,
+				 struct v4l2_mbus_framefmt *fmt)
 {
 	int idx;
 
@@ -1703,8 +1703,8 @@ static int startup(struct v4l2_subdev *sd)
 	return ret;
 }
 
-static int ov5693_s_mbus_fmt(struct v4l2_subdev *sd,
-			     struct v4l2_mbus_framefmt *fmt)
+static int __ov5693_s_mbus_fmt(struct v4l2_subdev *sd,
+			       struct v4l2_mbus_framefmt *fmt)
 {
 	struct ov5693_device *dev = to_ov5693_sensor(sd);
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
@@ -1716,7 +1716,7 @@ static int ov5693_s_mbus_fmt(struct v4l2_subdev *sd,
 		return -EINVAL;
 
 	mutex_lock(&dev->input_lock);
-	ret = ov5693_try_mbus_fmt(sd, fmt);
+	ret = __ov5693_try_mbus_fmt(sd, fmt);
 	if (ret == -1) {
 		dev_err(&client->dev, "try fmt fail\n");
 		goto err;
@@ -1979,21 +1979,23 @@ static int ov5693_get_pad_format(struct v4l2_subdev *sd,
 }
 
 static int ov5693_set_pad_format(struct v4l2_subdev *sd,
-				struct v4l2_subdev_state *sd_state,
-				struct v4l2_subdev_format *fmt)
+				 struct v4l2_subdev_state *sd_state,
+				 struct v4l2_subdev_format *fmt)
 {
 	struct ov5693_device *snr = to_ov5693_sensor(sd);
+
+	if (fmt->pad)
+		return -EINVAL;
 
 	if (fmt->which == V4L2_SUBDEV_FORMAT_ACTIVE)
 		snr->format = fmt->format;
 
-	return 0;
+	/* This calls __ov5693_try_mbus_fmt() internally */
+	return __ov5693_s_mbus_fmt(sd, &fmt->format);
 }
 
 static const struct v4l2_subdev_video_ops ov5693_video_ops = {
 	.s_stream = ov5693_s_stream,
-	.try_mbus_fmt = ov5693_try_mbus_fmt,
-	.s_mbus_fmt = ov5693_s_mbus_fmt,
 	.g_frame_interval = ov5693_g_frame_interval,
 };
 
