@@ -1228,14 +1228,6 @@ static int ov8830_s_stream(struct v4l2_subdev *sd, int enable)
 	return 0;
 }
 
-static int ov8830_enum_mbus_fmt(struct v4l2_subdev *sd, unsigned int index,
-				 u32 *code)
-{
-	pr_info("%s() called\n", __func__);
-	*code = MEDIA_BUS_FMT_SBGGR10_1X10;
-	return 0;
-}
-
 static int ov8830_s_config(struct v4l2_subdev *sd,
 			    int irq, void *platform_data)
 {
@@ -1519,7 +1511,6 @@ static int ov8830_g_skip_frames(struct v4l2_subdev *sd, u32 *frames)
 
 static const struct v4l2_subdev_video_ops ov8830_video_ops = {
 	.s_stream = ov8830_s_stream,
-	.enum_mbus_fmt = ov8830_enum_mbus_fmt,
 	.try_mbus_fmt = ov8830_try_mbus_fmt,
 	.g_mbus_fmt = ov8830_g_mbus_fmt,
 	.s_mbus_fmt = ov8830_s_mbus_fmt,
