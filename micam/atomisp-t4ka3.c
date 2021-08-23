@@ -909,21 +909,6 @@ static int t4ka3_set_mbus_fmt(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int t4ka3_g_mbus_fmt(struct v4l2_subdev *sd,
-			      struct v4l2_mbus_framefmt *fmt)
-{
-	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
-
-	if (!fmt)
-		return -EINVAL;
-
-	fmt->width = t4ka3_res[dev->fmt_idx].width;
-	fmt->height = t4ka3_res[dev->fmt_idx].height;
-	fmt->code = t4ka3_res[dev->fmt_idx].code;
-
-	return 0;
-}
-
 static int t4ka3_g_focal(struct v4l2_subdev *sd, s32 *val)
 {
 	*val = (T4KA3_FOCAL_LENGTH_NUM << 16) | T4KA3_FOCAL_LENGTH_DEM;
@@ -1849,7 +1834,6 @@ static const struct v4l2_subdev_video_ops t4ka3_video_ops = {
 	.try_mbus_fmt = t4ka3_try_mbus_fmt,
 	.s_mbus_fmt = t4ka3_set_mbus_fmt,
 	.s_stream = t4ka3_s_stream,
-	.g_mbus_fmt = t4ka3_g_mbus_fmt,
 	.g_frame_interval = t4ka3_g_frame_interval,
 };
 
