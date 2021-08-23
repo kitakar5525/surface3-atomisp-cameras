@@ -1308,23 +1308,8 @@ static int ov5693_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
 	return ret;
 }
 
-static int ov5693_s_ctrl(struct v4l2_ctrl *ctrl)
-{
-	struct ov5693_device *dev =
-	    container_of(ctrl->handler, struct ov5693_device, ctrl_handler);
-	struct i2c_client *client = v4l2_get_subdevdata(&dev->sd);
-	int ret = 0;
-
-	switch (ctrl->id) {
-	default:
-		ret = -EINVAL;
-	}
-	return ret;
-}
-
 static const struct v4l2_ctrl_ops ov5693_ctrl_ops = {
 	.g_volatile_ctrl = ov5693_g_volatile_ctrl,
-	.s_ctrl = ov5693_s_ctrl,
 };
 
 struct v4l2_ctrl_config ov5693_controls[] = {
