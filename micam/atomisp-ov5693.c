@@ -1850,23 +1850,6 @@ static int ov5693_s_stream(struct v4l2_subdev *sd, int enable)
 	return ret;
 }
 
-/* ov5693 enum frame size, frame intervals */
-static int ov5693_enum_framesizes(struct v4l2_subdev *sd,
-				  struct v4l2_frmsizeenum *fsize)
-{
-	unsigned int index = fsize->index;
-
-	if (index >= N_RES)
-		return -EINVAL;
-
-	fsize->type = V4L2_FRMSIZE_TYPE_DISCRETE;
-	fsize->discrete.width = ov5693_res[index].width;
-	fsize->discrete.height = ov5693_res[index].height;
-	fsize->reserved[0] = ov5693_res[index].used;
-
-	return 0;
-}
-
 static int ov5693_enum_frameintervals(struct v4l2_subdev *sd,
 				      struct v4l2_frmivalenum *fival)
 {
@@ -2049,7 +2032,6 @@ static int ov5693_set_pad_format(struct v4l2_subdev *sd,
 
 static const struct v4l2_subdev_video_ops ov5693_video_ops = {
 	.s_stream = ov5693_s_stream,
-	.enum_framesizes = ov5693_enum_framesizes,
 	.enum_frameintervals = ov5693_enum_frameintervals,
 	.enum_mbus_fmt = ov5693_enum_mbus_fmt,
 	.try_mbus_fmt = ov5693_try_mbus_fmt,
