@@ -1128,25 +1128,6 @@ out:
 	return ret;
 }
 
-static int ov8830_g_mbus_fmt(struct v4l2_subdev *sd,
-			      struct v4l2_mbus_framefmt *fmt)
-{
-	struct ov8830_device *dev = to_ov8830_sensor(sd);
-
-	pr_info("%s() called\n", __func__);
-
-	if (!fmt)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	fmt->width = dev->curr_res_table[dev->fmt_idx].width;
-	fmt->height = dev->curr_res_table[dev->fmt_idx].height;
-	fmt->code = MEDIA_BUS_FMT_SBGGR10_1X10;
-	mutex_unlock(&dev->input_lock);
-
-	return 0;
-}
-
 static int ov8830_detect(struct i2c_client *client, u16 *id, u8 *revision)
 {
 	struct i2c_adapter *adapter = client->adapter;
@@ -1512,7 +1493,6 @@ static int ov8830_g_skip_frames(struct v4l2_subdev *sd, u32 *frames)
 static const struct v4l2_subdev_video_ops ov8830_video_ops = {
 	.s_stream = ov8830_s_stream,
 	.try_mbus_fmt = ov8830_try_mbus_fmt,
-	.g_mbus_fmt = ov8830_g_mbus_fmt,
 	.s_mbus_fmt = ov8830_s_mbus_fmt,
 	.g_frame_interval = ov8830_g_frame_interval,
 	.s_frame_interval = ov8830_s_frame_interval,
