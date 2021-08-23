@@ -439,19 +439,6 @@ static int ov8830_g_priv_int_data(struct v4l2_subdev *sd,
 	return r;
 }
 
-static int __ov8830_get_max_fps_index(
-				const struct ov8830_fps_setting *fps_settings)
-{
-	int i;
-
-	for (i = 0; i < MAX_FPS_OPTIONS_SUPPORTED; i++) {
-		if (fps_settings[i].fps == 0)
-			break;
-	}
-
-	return i - 1;
-}
-
 static int __ov8830_update_frame_timing(struct v4l2_subdev *sd, int exposure,
 			u16 *hts, u16 *vts)
 {
