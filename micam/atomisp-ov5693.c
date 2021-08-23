@@ -1264,6 +1264,69 @@ static int ov5693_q_focus_status(struct v4l2_subdev *sd, s32 *value)
 	return 0;
 }
 
+static int ov5693_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
+{
+	struct ov5693_device *dev =
+	    container_of(ctrl->handler, struct ov5693_device, ctrl_handler);
+	int ret = 0;
+
+	switch (ctrl->id) {
+	case V4L2_CID_EXPOSURE_ABSOLUTE:
+		ret = ov5693_q_exposure(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FOCAL_ABSOLUTE:
+		ret = ov5693_g_focal(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FNUMBER_ABSOLUTE:
+		ret = ov5693_g_fnumber(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FNUMBER_RANGE:
+		ret = ov5693_g_fnumber_range(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FOCUS_STATUS:
+		ret = ov5693_q_focus_status(&dev->sd, &ctrl->val);
+		/*
+		 * This break was not here on the initial upstream
+		 * commit (by mistake?). And later added on commit
+		 * 9e7b319e1d1e ("staging: atomisp: fix missing break in
+		 * switch statement")
+		 *
+		 * TODO: Check if this break is needed. I believe it is
+		 * though, but just in case.
+		 */
+		break;
+	case V4L2_CID_BIN_FACTOR_HORZ:
+		ret = ov5693_g_bin_factor_x(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_BIN_FACTOR_VERT:
+		ret = ov5693_g_bin_factor_y(&dev->sd, &ctrl->val);
+		break;
+	default:
+		ret = -EINVAL;
+	}
+
+	return ret;
+}
+
+static int ov5693_s_ctrl(struct v4l2_ctrl *ctrl)
+{
+	struct ov5693_device *dev =
+	    container_of(ctrl->handler, struct ov5693_device, ctrl_handler);
+	struct i2c_client *client = v4l2_get_subdevdata(&dev->sd);
+	int ret = 0;
+
+	switch (ctrl->id) {
+	default:
+		ret = -EINVAL;
+	}
+	return ret;
+}
+
+static const struct v4l2_ctrl_ops ov5693_ctrl_ops = {
+	.g_volatile_ctrl = ov5693_g_volatile_ctrl,
+	.s_ctrl = ov5693_s_ctrl,
+};
+
 struct v4l2_ctrl_config ov5693_controls[] = {
 	{
 		.ops = &ov5693_ctrl_ops,
@@ -1342,69 +1405,6 @@ struct v4l2_ctrl_config ov5693_controls[] = {
 		.def = 0,
 		.flags = 0,
 	},
-};
-
-static int ov5693_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
-{
-	struct ov5693_device *dev =
-	    container_of(ctrl->handler, struct ov5693_device, ctrl_handler);
-	int ret = 0;
-
-	switch (ctrl->id) {
-	case V4L2_CID_EXPOSURE_ABSOLUTE:
-		ret = ov5693_q_exposure(&dev->sd, &ctrl->val);
-		break;
-	case V4L2_CID_FOCAL_ABSOLUTE:
-		ret = ov5693_g_focal(&dev->sd, &ctrl->val);
-		break;
-	case V4L2_CID_FNUMBER_ABSOLUTE:
-		ret = ov5693_g_fnumber(&dev->sd, &ctrl->val);
-		break;
-	case V4L2_CID_FNUMBER_RANGE:
-		ret = ov5693_g_fnumber_range(&dev->sd, &ctrl->val);
-		break;
-	case V4L2_CID_FOCUS_STATUS:
-		ret = ov5693_q_focus_status(&dev->sd, &ctrl->val);
-		/*
-		 * This break was not here on the initial upstream
-		 * commit (by mistake?). And later added on commit
-		 * 9e7b319e1d1e ("staging: atomisp: fix missing break in
-		 * switch statement")
-		 *
-		 * TODO: Check if this break is needed. I believe it is
-		 * though, but just in case.
-		 */
-		break;
-	case V4L2_CID_BIN_FACTOR_HORZ:
-		ret = ov5693_g_bin_factor_x(&dev->sd, &ctrl->val);
-		break;
-	case V4L2_CID_BIN_FACTOR_VERT:
-		ret = ov5693_g_bin_factor_y(&dev->sd, &ctrl->val);
-		break;
-	default:
-		ret = -EINVAL;
-	}
-
-	return ret;
-}
-
-static int ov5693_s_ctrl(struct v4l2_ctrl *ctrl)
-{
-	struct ov5693_device *dev =
-	    container_of(ctrl->handler, struct ov5693_device, ctrl_handler);
-	struct i2c_client *client = v4l2_get_subdevdata(&dev->sd);
-	int ret = 0;
-
-	switch (ctrl->id) {
-	default:
-		ret = -EINVAL;
-	}
-	return ret;
-}
-
-static const struct v4l2_ctrl_ops ov5693_ctrl_ops = {
-	.g_volatile_ctrl = ov5693_g_volatile_ctrl,
-	.s_ctrl = ov5693_s_ctrl,
 };
 
 static int ov5693_init(struct v4l2_subdev *sd)
