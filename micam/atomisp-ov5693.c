@@ -1850,15 +1850,6 @@ static int ov5693_s_stream(struct v4l2_subdev *sd, int enable)
 	return ret;
 }
 
-static int ov5693_enum_mbus_fmt(struct v4l2_subdev *sd,
-				unsigned int index,
-				u32 *code)
-{
-	*code = MEDIA_BUS_FMT_SBGGR10_1X10;
-
-	return 0;
-}
-
 static int ov5693_s_config(struct v4l2_subdev *sd,
 			   int irq, void *platform_data)
 {
@@ -2015,7 +2006,6 @@ static int ov5693_set_pad_format(struct v4l2_subdev *sd,
 
 static const struct v4l2_subdev_video_ops ov5693_video_ops = {
 	.s_stream = ov5693_s_stream,
-	.enum_mbus_fmt = ov5693_enum_mbus_fmt,
 	.try_mbus_fmt = ov5693_try_mbus_fmt,
 	.g_mbus_fmt = ov5693_g_mbus_fmt,
 	.s_mbus_fmt = ov5693_s_mbus_fmt,
