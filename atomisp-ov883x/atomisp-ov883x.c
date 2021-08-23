@@ -1051,23 +1051,8 @@ static int __ov8830_try_mbus_fmt(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int ov8830_try_mbus_fmt(struct v4l2_subdev *sd,
+static int __ov8830_s_mbus_fmt(struct v4l2_subdev *sd,
 			       struct v4l2_mbus_framefmt *fmt)
-{
-	struct ov8830_device *dev = to_ov8830_sensor(sd);
-	int r;
-
-	pr_info("%s() called\n", __func__);
-
-	mutex_lock(&dev->input_lock);
-	r = __ov8830_try_mbus_fmt(sd, fmt);
-	mutex_unlock(&dev->input_lock);
-
-	return r;
-}
-
-static int ov8830_s_mbus_fmt(struct v4l2_subdev *sd,
-			      struct v4l2_mbus_framefmt *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	struct camera_mipi_info *ov8830_info = NULL;
@@ -1353,10 +1338,9 @@ ov8830_get_pad_format(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int
-ov8830_set_pad_format(struct v4l2_subdev *sd,
-		       struct v4l2_subdev_state *sd_state,
-		       struct v4l2_subdev_format *fmt)
+static int ov8830_set_pad_format(struct v4l2_subdev *sd,
+				 struct v4l2_subdev_state *sd_state,
+				 struct v4l2_subdev_format *fmt)
 {
 	struct ov8830_device *dev = to_ov8830_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
@@ -1365,9 +1349,14 @@ ov8830_set_pad_format(struct v4l2_subdev *sd,
 
 	pr_info("%s() called\n", __func__);
 
-	*format = fmt->format;
+	if (fmt->pad)
+		return -EINVAL;
 
-	return 0;
+	if (fmt->which == V4L2_SUBDEV_FORMAT_ACTIVE)
+		*format = fmt->format;
+
+	/* This calls __ov8830_try_mbus_fmt() internally */
+	return __ov8830_s_mbus_fmt(sd, &fmt->format);
 }
 
 static int ov8830_s_ctrl(struct v4l2_ctrl *ctrl)
@@ -1492,8 +1481,6 @@ static int ov8830_g_skip_frames(struct v4l2_subdev *sd, u32 *frames)
 
 static const struct v4l2_subdev_video_ops ov8830_video_ops = {
 	.s_stream = ov8830_s_stream,
-	.try_mbus_fmt = ov8830_try_mbus_fmt,
-	.s_mbus_fmt = ov8830_s_mbus_fmt,
 	.g_frame_interval = ov8830_g_frame_interval,
 	.s_frame_interval = ov8830_s_frame_interval,
 };
