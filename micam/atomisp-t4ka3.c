@@ -1506,31 +1506,6 @@ static int t4ka3_s_stream(struct v4l2_subdev *sd, int enable)
 	return 0;
 }
 
-static int t4ka3_enum_frameintervals(struct v4l2_subdev *sd,
-				       struct v4l2_frmivalenum *fival)
-{
-	int i;
-
-	/* since the isp will donwscale the resolution to the right size,
-	  * find the nearest one that will allow the isp to do so
-	  * important to ensure that the resolution requested is padded
-	  * correctly by the requester, which is the atomisp driver in
-	  * this case.
-	  */
-	i = nearest_resolution_index(fival->width, fival->height);
-
-	if (i == -1)
-		return -EINVAL;
-
-	fival->type = V4L2_FRMIVAL_TYPE_DISCRETE;
-	fival->width = t4ka3_res[i].width;
-	fival->height = t4ka3_res[i].height;
-	fival->discrete.numerator = 1;
-	fival->discrete.denominator = t4ka3_res[i].fps;
-
-	return 0;
-}
-
 static int t4ka3_enum_mbus_fmt(struct v4l2_subdev *sd,
 					unsigned int index,
 				 u32 *code)
@@ -1885,7 +1860,6 @@ static const struct v4l2_subdev_video_ops t4ka3_video_ops = {
 	.try_mbus_fmt = t4ka3_try_mbus_fmt,
 	.s_mbus_fmt = t4ka3_set_mbus_fmt,
 	.s_stream = t4ka3_s_stream,
-	.enum_frameintervals = t4ka3_enum_frameintervals,
 	.g_mbus_fmt = t4ka3_g_mbus_fmt,
 	.enum_mbus_fmt = t4ka3_enum_mbus_fmt,
 	.g_frame_interval = t4ka3_g_frame_interval,
