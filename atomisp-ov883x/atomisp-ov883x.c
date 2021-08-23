@@ -1028,6 +1028,9 @@ static int __ov8830_try_mbus_fmt(struct v4l2_subdev *sd,
 	if (!fmt)
 		return -EINVAL;
 
+	pr_info("%s(): fmt->width: %d\n", __func__, fmt->width);
+	pr_info("%s(): fmt->height: %d\n", __func__, fmt->height);
+
 	if ((fmt->width > OV8830_RES_WIDTH_MAX) ||
 	    (fmt->height > OV8830_RES_HEIGHT_MAX)) {
 		fmt->width = OV8830_RES_WIDTH_MAX;
@@ -1077,6 +1080,9 @@ static int ov8830_s_mbus_fmt(struct v4l2_subdev *sd,
 	const struct ov8830_resolution *res;
 
 	pr_info("%s() called\n", __func__);
+
+	pr_info("%s(): fmt->width: %d\n", __func__, fmt->width);
+	pr_info("%s(): fmt->height: %d\n", __func__, fmt->height);
 
 	ov8830_info = v4l2_get_subdev_hostdata(sd);
 	if (ov8830_info == NULL)
