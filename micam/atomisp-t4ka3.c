@@ -1506,25 +1506,6 @@ static int t4ka3_s_stream(struct v4l2_subdev *sd, int enable)
 	return 0;
 }
 
-/*
- * t4ka3 enum frame size, frame intervals
- */
-static int t4ka3_enum_framesizes(struct v4l2_subdev *sd,
-				   struct v4l2_frmsizeenum *fsize)
-{
-	unsigned int index = fsize->index;
-
-	if (index >= N_RES)
-		return -EINVAL;
-
-	fsize->type = V4L2_FRMSIZE_TYPE_DISCRETE;
-	fsize->discrete.width = t4ka3_res[index].width;
-	fsize->discrete.height = t4ka3_res[index].height;
-	fsize->reserved[0] = t4ka3_res[index].used;
-
-	return 0;
-}
-
 static int t4ka3_enum_frameintervals(struct v4l2_subdev *sd,
 				       struct v4l2_frmivalenum *fival)
 {
@@ -1904,7 +1885,6 @@ static const struct v4l2_subdev_video_ops t4ka3_video_ops = {
 	.try_mbus_fmt = t4ka3_try_mbus_fmt,
 	.s_mbus_fmt = t4ka3_set_mbus_fmt,
 	.s_stream = t4ka3_s_stream,
-	.enum_framesizes = t4ka3_enum_framesizes,
 	.enum_frameintervals = t4ka3_enum_frameintervals,
 	.g_mbus_fmt = t4ka3_g_mbus_fmt,
 	.enum_mbus_fmt = t4ka3_enum_mbus_fmt,
