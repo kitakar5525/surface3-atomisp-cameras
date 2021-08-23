@@ -785,7 +785,7 @@ static int nearest_resolution_index(int w, int h)
 	return idx;
 }
 
-static int t4ka3_try_mbus_fmt(struct v4l2_subdev *sd,
+static int __t4ka3_try_mbus_fmt(struct v4l2_subdev *sd,
 				struct v4l2_mbus_framefmt *fmt)
 {
 	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
@@ -819,8 +819,8 @@ static int t4ka3_try_mbus_fmt(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int t4ka3_set_mbus_fmt(struct v4l2_subdev *sd,
-			      struct v4l2_mbus_framefmt *fmt)
+static int __t4ka3_set_mbus_fmt(struct v4l2_subdev *sd,
+			        struct v4l2_mbus_framefmt *fmt)
 {
 	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
 	const struct t4ka3_reg *t4ka3_def_reg;
@@ -836,7 +836,7 @@ static int t4ka3_set_mbus_fmt(struct v4l2_subdev *sd,
 	if (t4ka3_info == NULL)
 		return -EINVAL;
 
-	ret = t4ka3_try_mbus_fmt(sd, fmt);
+	ret = __t4ka3_try_mbus_fmt(sd, fmt);
 	if (ret) {
 		v4l2_err(sd, "try fmt fail\n");
 		return ret;
@@ -1551,17 +1551,20 @@ t4ka3_get_pad_format(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int
-t4ka3_set_pad_format(struct v4l2_subdev *sd,
-		       struct v4l2_subdev_state *sd_state,
-		       struct v4l2_subdev_format *fmt)
+static int t4ka3_set_pad_format(struct v4l2_subdev *sd,
+				struct v4l2_subdev_state *sd_state,
+				struct v4l2_subdev_format *fmt)
 {
 	struct t4ka3_device *dev = to_t4ka3_sensor(sd);
+
+	if (fmt->pad)
+		return -EINVAL;
 
 	if (fmt->which == V4L2_SUBDEV_FORMAT_ACTIVE)
 		dev->format = fmt->format;
 
-	return 0;
+	/* This calls __t4ka3_try_mbus_fmt() internally */
+	return __t4ka3_set_mbus_fmt(sd, &fmt->format);
 }
 
 int
@@ -1831,8 +1834,6 @@ static const struct v4l2_subdev_sensor_ops t4ka3_sensor_ops = {
 };
 
 static const struct v4l2_subdev_video_ops t4ka3_video_ops = {
-	.try_mbus_fmt = t4ka3_try_mbus_fmt,
-	.s_mbus_fmt = t4ka3_set_mbus_fmt,
 	.s_stream = t4ka3_s_stream,
 	.g_frame_interval = t4ka3_g_frame_interval,
 };
