@@ -55,39 +55,9 @@ static const int t4ka3_bayer_order_mapping[2][2] = {
 	{ atomisp_bayer_order_bggr, atomisp_bayer_order_gbrg }
 };
 
-static int op_dump_otp;
 struct t4ka3_device *global_dev;
 
-
-static int t4ka3_dump_otp(const char *val, const struct kernel_param *kp);
-module_param_call(dumpotp, t4ka3_dump_otp, param_get_uint,
-				&op_dump_otp, S_IRUGO | S_IWUSR);
-
 static int t4ka3_detect(struct i2c_client *client, u16 *id);
-
-
-static int t4ka3_dump_otp(const char *val, const struct kernel_param *kp)
-{
-	int ret;
-	if (NULL != global_dev->otp_raw_data) {
-		ret = dw9761_otp_save(global_dev->otp_raw_data,
-		DW9761_OTP_RAW_SIZE,
-		DW9761_SAVE_RAW_OTP);
-
-		if (ret != 0)
-			printk(KERN_ERR "Fail to save t4ka3 RAW OTP data\n");
-	}
-	if (NULL != global_dev->otp_data) {
-		ret = dw9761_otp_save(global_dev->otp_data,
-			DEFAULT_DW9761_OTP_SIZE,
-			DW9761_SAVE_PARSED_OTP);
-
-		if (ret != 0)
-			printk(KERN_ERR "Fail to save t4ka3 PARSED OTP data\n");
-	}
-	return 0;
-}
-
 
 static int t4ka3_read_reg(struct i2c_client *client, u16 len,
 						u16 reg, u16 *val)

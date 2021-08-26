@@ -531,26 +531,3 @@ void *dw9761_otp_read(struct v4l2_subdev *sd, u8 **rawotp, u8 *vendorid)
 
 	return parsedbuffer;
 }
-
-int dw9761_otp_save(u8 *pData, u32 size, const u8 *filp_name)
-{
-	struct file *fp = NULL;
-	mm_segment_t fs;
-	loff_t pos;
-
-	fp = filp_open(filp_name, O_CREAT|O_RDWR, 0644);
-	if (IS_ERR(fp))
-		return -EPERM;
-
-	fs = get_fs();
-	set_fs(KERNEL_DS);
-	pos = 0;
-	vfs_write(fp, pData, size, &pos);
-	set_fs(fs);
-
-	filp_close(fp, NULL);
-
-	return 0;
-}
-
-
