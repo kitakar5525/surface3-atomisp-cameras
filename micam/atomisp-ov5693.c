@@ -1312,7 +1312,7 @@ static const struct v4l2_ctrl_ops ov5693_ctrl_ops = {
 	.g_volatile_ctrl = ov5693_g_volatile_ctrl,
 };
 
-struct v4l2_ctrl_config ov5693_controls[] = {
+static const struct v4l2_ctrl_config ov5693_controls[] = {
 	{
 		.ops = &ov5693_ctrl_ops,
 		.id = V4L2_CID_EXPOSURE_ABSOLUTE,
