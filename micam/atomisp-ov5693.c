@@ -271,51 +271,7 @@ static int __ov5693_buf_reg_array(struct i2c_client *client,
 	return 0;
 }
 
-int ov5693_otp_save(u8 *pData, u32 size, const u8 *filp_name)
-{
-	struct file *fp = NULL;
-	mm_segment_t fs;
-	loff_t pos;
-
-	fp = filp_open(filp_name, O_CREAT|O_RDWR, 0644);
-	if (IS_ERR(fp))
-		return -EPERM;
-
-	fs = get_fs();
-	set_fs(KERNEL_DS);
-	pos = 0;
-	vfs_write(fp, pData, size, &pos);
-	set_fs(fs);
-
-	filp_close(fp, NULL);
-
-	return 0;
-}
-
-static int op_dump_otp;
 struct ov5693_device *global_dev;
-
-
-static int ov5693_dump_otp(const char *val, const struct kernel_param *kp);
-module_param_call(dumpotp, ov5693_dump_otp, param_get_uint,
-				&op_dump_otp, S_IRUGO | S_IWUSR);
-
-
-static int ov5693_dump_otp(const char *val, const struct kernel_param *kp)
-{
-	int ret;
-	if (NULL != global_dev->otp_data) {
-		ret = ov5693_otp_save(global_dev->otp_data,
-			OV5693_OTP_DATA_SIZE,
-			OV5693_SAVE_PARSED_OTP);
-
-	if (ret != 0)
-		printk(KERN_ERR "Fail to save ov5693 PARSED OTP data\n");
-	}
-	return 0;
-}
-
-
 
 static int __ov5693_read_one_bank(struct i2c_client *client,
 				int bank,
