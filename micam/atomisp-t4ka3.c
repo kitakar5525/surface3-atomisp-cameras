@@ -1685,7 +1685,7 @@ static const struct v4l2_ctrl_config v4l2_ctrl_link_freq = {
 	.flags = V4L2_CTRL_FLAG_VOLATILE | V4L2_CTRL_FLAG_READ_ONLY,
 };
 
-struct v4l2_ctrl_config t4ka3_controls[] = {
+static const struct v4l2_ctrl_config t4ka3_controls[] = {
 	{
 		.ops = &t4ka3_ctrl_ops,
 		.id = V4L2_CID_EXPOSURE_ABSOLUTE,
