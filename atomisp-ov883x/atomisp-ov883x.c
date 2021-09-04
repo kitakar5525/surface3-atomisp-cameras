@@ -711,6 +711,11 @@ static int __ov8830_s_power(struct v4l2_subdev *sd, int on)
 
 		/* Initalise sensor settings */
 		ret = ov8830_init_registers(sd);
+
+		/* set default values */
+		dev->exposure = 3000;
+		dev->gain = 3000;
+		dev->digital_gain = 3000;
 	}
 
 	return ret;
