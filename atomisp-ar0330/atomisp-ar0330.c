@@ -384,6 +384,8 @@ static int ar0330_set_fmt(struct v4l2_subdev *sd,
 	const struct ar0330_mode *mode;
 	s64 h_blank, vblank_def;
 
+	pr_info("%s() called\n", __func__);
+
 	mutex_lock(&ar0330->mutex);
 
 	mode = ar0330_find_best_fit(fmt);
@@ -416,6 +418,8 @@ static int ar0330_get_fmt(struct v4l2_subdev *sd,
 	struct ar0330 *ar0330 = to_ar0330(sd);
 	const struct ar0330_mode *mode = ar0330->cur_mode;
 
+	pr_info("%s() called\n", __func__);
+
 	mutex_lock(&ar0330->mutex);
 	if (fmt->which == V4L2_SUBDEV_FORMAT_TRY) {
 		fmt->format = *v4l2_subdev_get_try_format(sd, sd_state,
@@ -435,6 +439,8 @@ static int ar0330_enum_mbus_code(struct v4l2_subdev *sd,
 				 struct v4l2_subdev_state *sd_state,
 				 struct v4l2_subdev_mbus_code_enum *code)
 {
+	pr_info("%s() called\n", __func__);
+
 	if (code->index != 0)
 		return -EINVAL;
 	code->code = PIX_FORMAT;
@@ -446,6 +452,8 @@ static int ar0330_enum_frame_sizes(struct v4l2_subdev *sd,
 				   struct v4l2_subdev_state *sd_state,
 				   struct v4l2_subdev_frame_size_enum *fse)
 {
+	pr_info("%s() called\n", __func__);
+
 	if (fse->index >= ARRAY_SIZE(supported_modes))
 		return -EINVAL;
 
@@ -522,6 +530,8 @@ static int ar0330_g_frame_interval(struct v4l2_subdev *sd,
 {
 	struct ar0330 *ar0330 = to_ar0330(sd);
 	const struct ar0330_mode *mode = ar0330->cur_mode;
+
+	pr_info("%s() called\n", __func__);
 
 	mutex_lock(&ar0330->mutex);
 	fi->interval = mode->max_fps;
@@ -718,6 +728,8 @@ static int ar0330_enum_frame_interval(struct v4l2_subdev *sd,
 				 struct v4l2_subdev_state *sd_state,
 				 struct v4l2_subdev_frame_interval_enum *fie)
 {
+	pr_info("%s() called\n", __func__);
+
 	if (fie->index >= ARRAY_SIZE(supported_modes))
 		return -EINVAL;
 
