@@ -42,7 +42,6 @@
 #include <media/v4l2-device.h>
 #include <media/v4l2-chip-ident.h>
 #include <asm/intel_scu_ipc.h>
-#include <asm/intel_mid_rpmsg.h>
 #include "ar0543_raw.h"
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
