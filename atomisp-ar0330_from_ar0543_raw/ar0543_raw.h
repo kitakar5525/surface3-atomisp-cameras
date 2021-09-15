@@ -35,12 +35,6 @@
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
 
-//ASUS_BSP++
-#include <linux/HWVersion.h>
-extern int Read_HW_ID(void);
-//static unsigned int HW_ID = 0xFF;
-//ASUS_BSP--
-
 #define AR0543_RAW_RES_WIDTH_MAX	2592
 #define AR0543_RAW_RES_HEIGHT_MAX	1944
 #define MAX_FMTS 1
@@ -344,8 +338,6 @@ struct ar0543_raw_device {
 	void *fuseid;
 	/* Older VCMs could not maintain the focus position in standby mode. */
 	bool keeps_focus_pos;
-
-	struct attribute_group sensor_i2c_attribute; //Add for ATD command+++
 };
 
 #define AR0543_RAW_MAX_WRITE_BUF_SIZE	32
