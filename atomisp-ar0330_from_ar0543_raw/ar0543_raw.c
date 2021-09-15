@@ -40,7 +40,6 @@
 #include <linux/io.h>
 #include <linux/bitops.h>
 #include <media/v4l2-device.h>
-#include <media/v4l2-chip-ident.h>
 #include <asm/intel_scu_ipc.h>
 #include "ar0543_raw.h"
 #include <linux/proc_fs.h>
@@ -936,19 +935,6 @@ static int ar0543_raw_s_power(struct v4l2_subdev *sd, int on)
 	mutex_unlock(&dev->input_lock);
         printk("%s: e\n",__FUNCTION__);
 	return ret;
-}
-
-static int ar0543_raw_g_chip_ident(struct v4l2_subdev *sd,
-				struct v4l2_dbg_chip_ident *chip)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-
-	if (!chip)
-		return -EINVAL;
-
-	v4l2_chip_ident_i2c_client(client, chip, V4L2_IDENT_AR0543_RAW, 0);
-
-	return 0;
 }
 
 static int
@@ -1981,7 +1967,6 @@ static struct v4l2_subdev_sensor_ops ar0543_raw_sensor_ops = {
 };
 
 static const struct v4l2_subdev_core_ops ar0543_raw_core_ops = {
-	.g_chip_ident = ar0543_raw_g_chip_ident,
 	.queryctrl = ar0543_raw_queryctrl,
 	.g_ctrl = ar0543_raw_g_ctrl,
 	.s_ctrl = ar0543_raw_s_ctrl,

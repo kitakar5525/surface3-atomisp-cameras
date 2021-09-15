@@ -31,7 +31,6 @@
 #include <linux/v4l2-mediabus.h>
 #include <linux/types.h>
 #include <media/media-entity.h>
-#include <media/v4l2-chip-ident.h>
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
 
@@ -55,11 +54,6 @@
 
 #define AR0543_RAW_REG_BITS	16
 #define AR0543_RAW_REG_MASK	0xFFFF
-
-/* This should be added into include/linux/videodev2.h */
-#ifndef V4L2_IDENT_AR0543_RAW
-#define V4L2_IDENT_AR0543_RAW	8245
-#endif
 
 /*
  * ar0543_raw System control registers
