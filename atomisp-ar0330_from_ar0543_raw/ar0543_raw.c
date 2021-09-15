@@ -1411,9 +1411,9 @@ static int __ar0543_raw_try_mbus_fmt(struct v4l2_subdev *sd,
 		fmt->height = ar0543_raw_res[idx].height;
 	}
 #ifdef CONFIG_ME175CG
-	fmt->code = V4L2_MBUS_FMT_SGBRG10_1X10;
+	fmt->code = MEDIA_BUS_FMT_SGBRG10_1X10;
 #else
-	fmt->code = V4L2_MBUS_FMT_SGRBG10_1X10;
+	fmt->code = MEDIA_BUS_FMT_SGRBG10_1X10;
 #endif
 
 	return 0;
@@ -1439,9 +1439,9 @@ static int ar0543_raw_get_mbus_format_code(struct v4l2_subdev *sd)
 	if (!dev->power)
 		return -EIO;
 #ifdef CONFIG_ME175CG
-	return V4L2_MBUS_FMT_SGBRG10_1X10;
+	return MEDIA_BUS_FMT_SGBRG10_1X10;
 #else
-	return V4L2_MBUS_FMT_SGRBG10_1X10;
+	return MEDIA_BUS_FMT_SGRBG10_1X10;
 #endif
 }
 
@@ -2045,9 +2045,9 @@ static int ar0543_raw_probe(struct i2c_client *client,
 	dev->sd.entity.ops = &ar0543_raw_entity_ops;
 	dev->sd.entity.type = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
 #ifdef CONFIG_ME175CG
-	dev->format.code = V4L2_MBUS_FMT_SGBRG10_1X10;
+	dev->format.code = MEDIA_BUS_FMT_SGBRG10_1X10;
 #else
-	dev->format.code = V4L2_MBUS_FMT_SGRBG10_1X10;
+	dev->format.code = MEDIA_BUS_FMT_SGRBG10_1X10;
 #endif
 
 	ret = media_entity_init(&dev->sd.entity, 1, &dev->pad, 0);
