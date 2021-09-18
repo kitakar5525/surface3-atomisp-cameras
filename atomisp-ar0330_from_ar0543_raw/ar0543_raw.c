@@ -1179,7 +1179,8 @@ static int ar0543_raw_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
 
 static int ar0543_raw_s_ctrl(struct v4l2_ctrl *ctrl)
 {
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
+	struct ar0543_raw_device *dev =
+	    container_of(ctrl->handler, struct ar0543_raw_device, ctrl_handler);
 	struct i2c_client *client = v4l2_get_subdevdata(&dev->sd);
 	int ret = 0;
 
