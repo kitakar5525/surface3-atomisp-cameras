@@ -812,8 +812,6 @@ static int ar0543_raw_init_registers(struct v4l2_subdev *sd)
 static int __ar0543_raw_init(struct v4l2_subdev *sd, u32 val)
 {
 	int ret;
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	u8 fw_rev[16] = {0};
 
 	/* set inital registers */
 	ret = ar0543_raw_init_registers(sd);
