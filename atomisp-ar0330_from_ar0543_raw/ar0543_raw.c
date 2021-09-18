@@ -1400,23 +1400,6 @@ static int ar0543_raw_s_mbus_fmt(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int ar0543_raw_g_mbus_fmt(struct v4l2_subdev *sd,
-			      struct v4l2_mbus_framefmt *fmt)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-
-	if (!fmt)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	fmt->width = ar0543_raw_res[dev->fmt_idx].width;
-	fmt->height = ar0543_raw_res[dev->fmt_idx].height;
-	fmt->code = ar0543_raw_get_mbus_format_code(sd);
-	mutex_unlock(&dev->input_lock);
-
-	return fmt->code < 0 ? fmt->code : 0;
-}
-
 static int ar0543_raw_detect(struct i2c_client *client, u16 *id, u8 *revision)
 {
 	struct i2c_adapter *adapter = client->adapter;
@@ -1825,7 +1808,6 @@ static struct v4l2_ctrl_config ar0543_raw_controls[] = {
 static const struct v4l2_subdev_video_ops ar0543_raw_video_ops = {
 	.s_stream = ar0543_raw_s_stream,
 	.try_mbus_fmt = ar0543_raw_try_mbus_fmt,
-	.g_mbus_fmt = ar0543_raw_g_mbus_fmt,
 	.s_mbus_fmt = ar0543_raw_s_mbus_fmt,
 	.g_frame_interval = ar0543_raw_g_frame_interval,
 };
