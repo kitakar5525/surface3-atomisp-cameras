@@ -1495,28 +1495,6 @@ static int ar0543_raw_s_stream(struct v4l2_subdev *sd, int enable)
 	return 0;
 }
 
-/*
- * ar0543_raw enum frame size, frame intervals
- */
-static int ar0543_raw_enum_framesizes(struct v4l2_subdev *sd,
-				   struct v4l2_frmsizeenum *fsize)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	unsigned int index = fsize->index;
-
-	if (index >= N_RES)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	fsize->type = V4L2_FRMSIZE_TYPE_DISCRETE;
-	fsize->discrete.width = ar0543_raw_res[index].width;
-	fsize->discrete.height = ar0543_raw_res[index].height;
-	fsize->reserved[0] = ar0543_raw_res[index].used;
-	mutex_unlock(&dev->input_lock);
-
-	return 0;
-}
-
 static int ar0543_raw_enum_frameintervals(struct v4l2_subdev *sd,
 				       struct v4l2_frmivalenum *fival)
 {
@@ -1881,7 +1859,6 @@ static struct v4l2_ctrl_config ar0543_raw_controls[] = {
 
 static const struct v4l2_subdev_video_ops ar0543_raw_video_ops = {
 	.s_stream = ar0543_raw_s_stream,
-	.enum_framesizes = ar0543_raw_enum_framesizes,
 	.enum_frameintervals = ar0543_raw_enum_frameintervals,
 	.try_mbus_fmt = ar0543_raw_try_mbus_fmt,
 	.g_mbus_fmt = ar0543_raw_g_mbus_fmt,
