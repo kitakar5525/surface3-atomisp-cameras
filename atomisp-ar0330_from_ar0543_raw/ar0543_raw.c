@@ -1362,7 +1362,7 @@ static int nearest_resolution_index(int w, int h)
 	int dist;
 	int min_dist = INT_MAX;
 	struct ar0543_raw_resolution *tmp_res = NULL;
-	s32 m = LARGEST_ALLOWED_RATIO_MISMATCH;
+	s64 m = LARGEST_ALLOWED_RATIO_MISMATCH;
 
 	for (j = 0; j < 2; ++j) {
 		for (i = 0; i < N_RES; i++) {
