@@ -56,6 +56,8 @@
  * (result is 0 if b == 0) */
 #define divsave_rounded(a, b)	(((b) != 0) ? (((a)+((b)>>1))/(b)) : (-1))
 
+static char camera_module_otp[60];
+
 static int
 ar0543_raw_read_reg(struct i2c_client *client, u16 len, u16 reg, u16 *val)
 {
