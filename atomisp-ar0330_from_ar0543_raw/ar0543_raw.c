@@ -1517,7 +1517,7 @@ static int ar0543_raw_s_stream(struct v4l2_subdev *sd, int enable)
 }
 
 static int ar0543_raw_s_config(struct v4l2_subdev *sd,
-			    int irq, void *pdata)
+			       int irq, void *platform_data)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
@@ -1527,10 +1527,11 @@ static int ar0543_raw_s_config(struct v4l2_subdev *sd,
 	void *otp_data;
 	void *fuseid;
 
-	if (pdata == NULL)
+	if (!platform_data)
 		return -ENODEV;
 
-	dev->platform_data = pdata;
+	dev->platform_data =
+	    (struct camera_sensor_platform_data *)platform_data;
 
 	mutex_lock(&dev->input_lock);
 
