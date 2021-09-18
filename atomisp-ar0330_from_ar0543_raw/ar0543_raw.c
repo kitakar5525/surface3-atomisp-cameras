@@ -1277,7 +1277,7 @@ static int get_resolution_index(int w, int h)
 }
 
 static int __ar0543_raw_try_mbus_fmt(struct v4l2_subdev *sd,
-				struct v4l2_mbus_framefmt *fmt)
+				     struct v4l2_mbus_framefmt *fmt)
 {
 	int idx;
 
@@ -1312,19 +1312,6 @@ static int __ar0543_raw_try_mbus_fmt(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int ar0543_raw_try_mbus_fmt(struct v4l2_subdev *sd,
-				struct v4l2_mbus_framefmt *fmt)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	int ret;
-
-	mutex_lock(&dev->input_lock);
-	ret = __ar0543_raw_try_mbus_fmt(sd, fmt);
-	mutex_unlock(&dev->input_lock);
-
-	return ret;
-}
-
 static int ar0543_raw_get_mbus_format_code(struct v4l2_subdev *sd)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
@@ -1338,8 +1325,8 @@ static int ar0543_raw_get_mbus_format_code(struct v4l2_subdev *sd)
 #endif
 }
 
-static int ar0543_raw_s_mbus_fmt(struct v4l2_subdev *sd,
-			      struct v4l2_mbus_framefmt *fmt)
+static int __ar0543_raw_s_mbus_fmt(struct v4l2_subdev *sd,
+				   struct v4l2_mbus_framefmt *fmt)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
 	const struct ar0543_raw_reg *ar0543_raw_def_reg;
@@ -1646,16 +1633,15 @@ ar0543_raw_set_pad_format(struct v4l2_subdev *sd,
 			  struct v4l2_subdev_format *fmt)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	struct v4l2_mbus_framefmt *format =
-			__ar0543_raw_get_pad_format(dev, sd_state, fmt->pad,
-						    fmt->which);
 
-	if (format == NULL)
+	if (fmt->pad)
 		return -EINVAL;
+	
 	if (fmt->which == V4L2_SUBDEV_FORMAT_ACTIVE)
 		dev->format = fmt->format;
 
-	return 0;
+	/* This calls __ar0543_raw_try_mbus_fmt() internally */
+	return __ar0543_raw_s_mbus_fmt(sd, &fmt->format);
 }
 
 static int
@@ -1807,8 +1793,6 @@ static struct v4l2_ctrl_config ar0543_raw_controls[] = {
 
 static const struct v4l2_subdev_video_ops ar0543_raw_video_ops = {
 	.s_stream = ar0543_raw_s_stream,
-	.try_mbus_fmt = ar0543_raw_try_mbus_fmt,
-	.s_mbus_fmt = ar0543_raw_s_mbus_fmt,
 	.g_frame_interval = ar0543_raw_g_frame_interval,
 };
 
