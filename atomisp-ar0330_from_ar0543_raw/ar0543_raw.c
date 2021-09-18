@@ -1745,8 +1745,9 @@ fail_csi_cfg:
 }
 
 static int
-ar0543_raw_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
-		       struct v4l2_subdev_mbus_code_enum *code)
+ar0543_raw_enum_mbus_code(struct v4l2_subdev *sd,
+			  struct v4l2_subdev_state *sd_state,
+			  struct v4l2_subdev_mbus_code_enum *code)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
 
@@ -1761,8 +1762,9 @@ ar0543_raw_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config 
 }
 
 static int
-ar0543_raw_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
-			struct v4l2_subdev_frame_size_enum *fse)
+ar0543_raw_enum_frame_size(struct v4l2_subdev *sd,
+			   struct v4l2_subdev_state *sd_state,
+			   struct v4l2_subdev_frame_size_enum *fse)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
 	int index = fse->index;
@@ -1782,7 +1784,7 @@ ar0543_raw_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config
 
 static struct v4l2_mbus_framefmt *
 __ar0543_raw_get_pad_format(struct ar0543_raw_device *sensor,
-			 struct v4l2_subdev_pad_config *cfg, unsigned int pad,
+			 struct v4l2_subdev_state *sd_state, unsigned int pad,
 			 enum v4l2_subdev_format_whence which)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(&sensor->sd);
@@ -1794,7 +1796,7 @@ __ar0543_raw_get_pad_format(struct ar0543_raw_device *sensor,
 
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
-		return v4l2_subdev_get_try_format(&sensor->sd, cfg, pad);
+		return v4l2_subdev_get_try_format(&sensor->sd, sd_state, pad);
 	case V4L2_SUBDEV_FORMAT_ACTIVE:
 		return &sensor->format;
 	default:
@@ -1803,12 +1805,14 @@ __ar0543_raw_get_pad_format(struct ar0543_raw_device *sensor,
 }
 
 static int
-ar0543_raw_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
-		       struct v4l2_subdev_format *fmt)
+ar0543_raw_get_pad_format(struct v4l2_subdev *sd,
+			  struct v4l2_subdev_state *sd_state,
+			  struct v4l2_subdev_format *fmt)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
-			__ar0543_raw_get_pad_format(dev, cfg, fmt->pad, fmt->which);
+			__ar0543_raw_get_pad_format(dev, sd_state, fmt->pad,
+						    fmt->which);
 
 	if (format == NULL)
 		return -EINVAL;
@@ -1818,12 +1822,14 @@ ar0543_raw_get_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config 
 }
 
 static int
-ar0543_raw_set_pad_format(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg,
-		       struct v4l2_subdev_format *fmt)
+ar0543_raw_set_pad_format(struct v4l2_subdev *sd,
+			  struct v4l2_subdev_state *sd_state,
+			  struct v4l2_subdev_format *fmt)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
 	struct v4l2_mbus_framefmt *format =
-			__ar0543_raw_get_pad_format(dev, cfg, fmt->pad, fmt->which);
+			__ar0543_raw_get_pad_format(dev, sd_state, fmt->pad,
+						    fmt->which);
 
 	if (format == NULL)
 		return -EINVAL;
