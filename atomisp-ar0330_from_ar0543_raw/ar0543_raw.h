@@ -33,6 +33,7 @@
 #include <media/media-entity.h>
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
+#include <media/v4l2-ctrls.h>
 
 #define AR0543_RAW_RES_WIDTH_MAX	2592
 #define AR0543_RAW_RES_HEIGHT_MAX	1944
@@ -160,12 +161,6 @@
 #define	AR0543_RAW_STATUS_STANDBY		0x2
 #define	AR0543_RAW_STATUS_ACTIVE		0x3
 #define	AR0543_RAW_STATUS_VIEWFINDER	0x4
-
-struct s_ctrl_id {
-	struct v4l2_queryctrl qc;
-	int (*s_ctrl)(struct v4l2_subdev *sd, u32 val);
-	int (*g_ctrl)(struct v4l2_subdev *sd, u32 *val);
-};
 
 enum ar0543_raw_tok_type {
 	AR0543_RAW_8BIT  = 0x0001,
@@ -312,6 +307,8 @@ struct ar0543_raw_device {
 	void *otp_data;
 	struct ar0543_raw_af_data af_data;
 	void *fuseid;
+
+	struct v4l2_ctrl_handler ctrl_handler;
 };
 
 #define AR0543_RAW_MAX_WRITE_BUF_SIZE	32

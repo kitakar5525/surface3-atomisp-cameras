@@ -1145,159 +1145,131 @@ static int ar0543_raw_g_bin_factor_y(struct v4l2_subdev *sd, s32 *val)
 	return 0;
 }
 
-static struct ar0543_raw_control ar0543_raw_controls[] = {
+static struct v4l2_ctrl_config ar0543_raw_controls[] = {
 	{
-		.qc = {
-			.id = V4L2_CID_EXPOSURE_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "exposure",
-			.minimum = 0x0,
-			.maximum = 0xffff,
-			.step = 0x01,
-			.default_value = 0x00,
-			.flags = 0,
-		},
-		.query = ar0543_raw_q_exposure,
+		.ops = &ar0543_raw_ctrl_ops,
+		.id = V4L2_CID_EXPOSURE_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "exposure",
+		.min = 0x0,
+		.max = 0xffff,
+		.step = 0x01,
+		.def = 0x00,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_TEST_PATTERN,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "Test pattern",
-			.minimum = 0,
-			.maximum = 0xffff,
-			.step = 1,
-			.default_value = 0,
-		},
-		.tweak = ar0543_raw_test_pattern,
+		.ops = &ar0543_raw_ctrl_ops,
+		.id = V4L2_CID_TEST_PATTERN,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "Test pattern",
+		.min = 0,
+		.max = 0xffff,
+		.step = 1,
+		.def = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FOCAL_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focal length",
-			.minimum = AR0543_RAW_FOCAL_LENGTH_DEFAULT,
-			.maximum = AR0543_RAW_FOCAL_LENGTH_DEFAULT,
-			.step = 0x01,
-			.default_value = AR0543_RAW_FOCAL_LENGTH_DEFAULT,
-			.flags = 0,
-		},
-		.query = ar0543_raw_g_focal,
+		.ops = &ar0543_raw_ctrl_ops,
+		.id = V4L2_CID_FOCAL_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "focal length",
+		.min = AR0543_RAW_FOCAL_LENGTH_DEFAULT,
+		.max = AR0543_RAW_FOCAL_LENGTH_DEFAULT,
+		.step = 0x01,
+		.def = AR0543_RAW_FOCAL_LENGTH_DEFAULT,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FNUMBER_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "f-number",
-			.minimum = AR0543_RAW_F_NUMBER_DEFAULT,
-			.maximum = AR0543_RAW_F_NUMBER_DEFAULT,
-			.step = 0x01,
-			.default_value = AR0543_RAW_F_NUMBER_DEFAULT,
-			.flags = 0,
-		},
-		.query = ar0543_raw_g_fnumber,
+		.ops = &ar0543_raw_ctrl_ops,
+		.id = V4L2_CID_FNUMBER_ABSOLUTE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "f-number",
+		.min = AR0543_RAW_F_NUMBER_DEFAULT,
+		.max = AR0543_RAW_F_NUMBER_DEFAULT,
+		.step = 0x01,
+		.def = AR0543_RAW_F_NUMBER_DEFAULT,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_FNUMBER_RANGE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "f-number range",
-			.minimum = AR0543_RAW_F_NUMBER_RANGE,
-			.maximum =  AR0543_RAW_F_NUMBER_RANGE,
-			.step = 0x01,
-			.default_value = AR0543_RAW_F_NUMBER_RANGE,
-			.flags = 0,
-		},
-		.query = ar0543_raw_g_fnumber_range,
+		.ops = &ar0543_raw_ctrl_ops,
+		.id = V4L2_CID_FNUMBER_RANGE,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "f-number range",
+		.min = AR0543_RAW_F_NUMBER_RANGE,
+		.max =  AR0543_RAW_F_NUMBER_RANGE,
+		.step = 0x01,
+		.def = AR0543_RAW_F_NUMBER_RANGE,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_BIN_FACTOR_HORZ,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "horizontal binning factor",
-			.minimum = 0,
-			.maximum = AR0543_RAW_BIN_FACTOR_MAX,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.query = ar0543_raw_g_bin_factor_x,
+		.ops = &ar0543_raw_ctrl_ops,
+		.id = V4L2_CID_BIN_FACTOR_HORZ,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "horizontal binning factor",
+		.min = 0,
+		.max = AR0543_RAW_BIN_FACTOR_MAX,
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 	},
 	{
-		.qc = {
-			.id = V4L2_CID_BIN_FACTOR_VERT,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "vertical binning factor",
-			.minimum = 0,
-			.maximum = AR0543_RAW_BIN_FACTOR_MAX,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.query = ar0543_raw_g_bin_factor_y,
+		.ops = &ar0543_raw_ctrl_ops,
+		.id = V4L2_CID_BIN_FACTOR_VERT,
+		.type = V4L2_CTRL_TYPE_INTEGER,
+		.name = "vertical binning factor",
+		.min = 0,
+		.max = AR0543_RAW_BIN_FACTOR_MAX,
+		.step = 1,
+		.def = 0,
+		.flags = 0,
 	},
 };
-#define N_CONTROLS (ARRAY_SIZE(ar0543_raw_controls))
 
-static struct ar0543_raw_control *ar0543_raw_find_control(u32 id)
-{
-	int i;
-
-	for (i = 0; i < N_CONTROLS; i++)
-		if (ar0543_raw_controls[i].qc.id == id)
-			return &ar0543_raw_controls[i];
-	return NULL;
-}
-
-static int ar0543_raw_queryctrl(struct v4l2_subdev *sd, struct v4l2_queryctrl *qc)
+static int ar0543_raw_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	struct ar0543_raw_control *ctrl = ar0543_raw_find_control(qc->id);
+	int ret = 0;
 
-	if (ctrl == NULL)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	*qc = ctrl->qc;
-	mutex_unlock(&dev->input_lock);
-
-	return 0;
-}
-
-/* ar0543_raw control set/get */
-static int ar0543_raw_g_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	struct ar0543_raw_control *s_ctrl;
-	int ret;
-
-	if (!ctrl)
-		return -EINVAL;
-
-	s_ctrl = ar0543_raw_find_control(ctrl->id);
-	if ((s_ctrl == NULL) || (s_ctrl->query == NULL))
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	ret = s_ctrl->query(sd, &ctrl->value);
-	mutex_unlock(&dev->input_lock);
+	switch (ctrl->id) {
+	case V4L2_CID_EXPOSURE_ABSOLUTE:
+		ret = ar0543_raw_q_exposure(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FOCAL_ABSOLUTE:
+		ret = ar0543_raw_g_focal(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FNUMBER_ABSOLUTE:
+		ret = ar0543_raw_g_fnumber(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_FNUMBER_RANGE:
+		ret = ar0543_raw_g_fnumber_range(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_BIN_FACTOR_HORZ:
+		ret = ar0543_raw_g_bin_factor_x(&dev->sd, &ctrl->val);
+		break;
+	case V4L2_CID_BIN_FACTOR_VERT:
+		ret = ar0543_raw_g_bin_factor_y(&dev->sd, &ctrl->val);
+		break;
+	default:
+		ret = -EINVAL;
+	}
 
 	return ret;
 }
 
-static int ar0543_raw_s_ctrl(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
+static int ar0543_raw_s_ctrl(struct v4l2_ctrl *ctrl)
 {
 	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	struct ar0543_raw_control *octrl = ar0543_raw_find_control(ctrl->id);
-	int ret;
+	struct i2c_client *client = v4l2_get_subdevdata(&dev->sd);
+	int ret = 0;
 
-	if ((octrl == NULL) || (octrl->tweak == NULL))
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-	ret = octrl->tweak(sd, ctrl->value);
-	mutex_unlock(&dev->input_lock);
-
+	switch (ctrl->id) {
+	case V4L2_CID_TEST_PATTERN:
+		dev_dbg(&client->dev, "%s: V4L2_CID_TEST_PATTERN: %d\n",
+			__func__, ctrl->val);
+		ret = ar0543_raw_test_pattern(&dev->sd, ctrl->val);
+		break;
+	default:
+		ret = -EINVAL;
+	}
 	return ret;
 }
 
@@ -1901,6 +1873,12 @@ static int ar0543_raw_g_skip_frames(struct v4l2_subdev *sd, u32 *frames)
 
 	return 0;
 }
+
+static const struct v4l2_ctrl_ops ar0543_raw_ctrl_ops = {
+	.g_volatile_ctrl = ar0543_raw_g_volatile_ctrl,
+	.s_ctrl = ar0543_raw_s_ctrl,
+};
+
 static const struct v4l2_subdev_video_ops ar0543_raw_video_ops = {
 	.s_stream = ar0543_raw_s_stream,
 	.enum_framesizes = ar0543_raw_enum_framesizes,
@@ -1916,9 +1894,6 @@ static struct v4l2_subdev_sensor_ops ar0543_raw_sensor_ops = {
 };
 
 static const struct v4l2_subdev_core_ops ar0543_raw_core_ops = {
-	.queryctrl = ar0543_raw_queryctrl,
-	.g_ctrl = ar0543_raw_g_ctrl,
-	.s_ctrl = ar0543_raw_s_ctrl,
 	.s_power = ar0543_raw_s_power,
 	.ioctl = ar0543_raw_ioctl,
 	.init = ar0543_raw_init,
@@ -1950,9 +1925,31 @@ static int ar0543_raw_remove(struct i2c_client *client)
 
 	dev->platform_data->csi_cfg(sd, 0);
 	v4l2_device_unregister_subdev(sd);
+	v4l2_ctrl_handler_free(&dev->ctrl_handler);
 	kfree(dev->otp_data);
 	kfree(dev->fuseid);
 	kfree(dev);
+
+	return 0;
+}
+
+static int ar0543_raw_init_controls(struct ar0543_raw_device *dev)
+{
+	unsigned int i;
+
+	v4l2_ctrl_handler_init(&dev->ctrl_handler,
+			       ARRAY_SIZE(ar0543_raw_controls));
+
+	for (i = 0; i < ARRAY_SIZE(ar0543_raw_controls); i++)
+		v4l2_ctrl_new_custom(&dev->ctrl_handler,
+				     &ar0543_raw_controls[i],
+				     NULL);
+	if (dev->ctrl_handler.error)
+		return dev->ctrl_handler.error;
+
+	/* Use same lock for controls as for everything else. */
+	dev->ctrl_handler.lock = &dev->input_lock;
+	dev->sd.ctrl_handler = &dev->ctrl_handler;
 
 	return 0;
 }
@@ -1998,6 +1995,12 @@ static int ar0543_raw_probe(struct i2c_client *client,
 #else
 	dev->format.code = MEDIA_BUS_FMT_SGRBG10_1X10;
 #endif
+
+	ret = ar0543_raw_init_controls(dev);
+	if (ret) {
+		ar0543_raw_remove(client);
+		return ret;
+	}
 
 	ret = media_entity_pads_init(&dev->sd.entity, 1, &dev->pad);
 	if (ret) {
