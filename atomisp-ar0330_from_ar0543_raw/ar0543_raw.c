@@ -1659,18 +1659,6 @@ static int ar0543_raw_enum_frameintervals(struct v4l2_subdev *sd,
 	return 0;
 }
 
-static int ar0543_raw_enum_mbus_fmt(struct v4l2_subdev *sd, unsigned int index,
-				 enum v4l2_mbus_pixelcode *code)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-
-	mutex_lock(&dev->input_lock);
-	*code = ar0543_raw_get_mbus_format_code(sd);
-	mutex_unlock(&dev->input_lock);
-
-	return *code < 0 ? *code : 0;
-}
-
 static int ar0543_raw_s_config(struct v4l2_subdev *sd,
 			    int irq, void *pdata)
 {
@@ -1954,7 +1942,6 @@ static const struct v4l2_subdev_video_ops ar0543_raw_video_ops = {
 	.s_stream = ar0543_raw_s_stream,
 	.enum_framesizes = ar0543_raw_enum_framesizes,
 	.enum_frameintervals = ar0543_raw_enum_frameintervals,
-	.enum_mbus_fmt = ar0543_raw_enum_mbus_fmt,
 	.try_mbus_fmt = ar0543_raw_try_mbus_fmt,
 	.g_mbus_fmt = ar0543_raw_g_mbus_fmt,
 	.s_mbus_fmt = ar0543_raw_s_mbus_fmt,
