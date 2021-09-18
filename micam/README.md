@@ -1,5 +1,1 @@
-#### to build
-
-```
-make KDIR="/path/to/your/kernel_tree" ATOMISP_INC="drivers/staging/media/atomisp/include"
-```
+Camera drivers for Xiami Mi Pad 2 ported for intel-aero (based on v4.4) kernel.
