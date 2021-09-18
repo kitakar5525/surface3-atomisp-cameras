@@ -843,6 +843,31 @@ static void ar0543_raw_uninit(struct v4l2_subdev *sd)
 	dev->gain       = 0;
 }
 
+static int power_ctrl(struct v4l2_subdev *sd, bool flag)
+{
+	int ret = 0;
+	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+
+	if (!dev || !dev->platform_data)
+		return -ENODEV;
+
+	dev_dbg(&client->dev, "%s: %s", __func__, flag ? "on" : "off");
+
+	if (flag) {
+		ret |= dev->platform_data->v1p8_ctrl(sd, 1);
+		ret |= dev->platform_data->v2p8_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+	}
+
+	if (!flag || ret) {
+		ret |= dev->platform_data->v1p8_ctrl(sd, 0);
+		ret |= dev->platform_data->v2p8_ctrl(sd, 0);
+	}
+
+	return ret;
+}
+
 static int power_up(struct v4l2_subdev *sd)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
@@ -851,7 +876,7 @@ static int power_up(struct v4l2_subdev *sd)
 
 	dev_info(&client->dev, "%s\n", __func__);
        /* power control */
-	ret = dev->platform_data->power_ctrl(sd, 1);
+	ret = power_ctrl(sd, 1);
 	if (ret)
 		goto fail_power;
 
@@ -871,7 +896,7 @@ static int power_up(struct v4l2_subdev *sd)
 fail_clk:
 	dev->platform_data->flisclk_ctrl(sd, 0);
 fail_power:
-	dev->platform_data->power_ctrl(sd, 0);
+	power_ctrl(sd, 0);
 	dev_err(&client->dev, "sensor power-up failed\n");
 
 	return ret;
@@ -895,7 +920,7 @@ static int power_down(struct v4l2_subdev *sd)
 		dev_err(&client->dev, "gpio failed 1\n");
 
 	/* power control */
-	ret = dev->platform_data->power_ctrl(sd, 0);
+	ret = power_ctrl(sd, 0);
 	if (ret)
 		dev_err(&client->dev, "vprog failed.\n");
 
