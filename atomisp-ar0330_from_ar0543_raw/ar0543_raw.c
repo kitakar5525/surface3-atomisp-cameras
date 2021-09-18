@@ -1147,7 +1147,8 @@ static int ar0543_raw_g_bin_factor_y(struct v4l2_subdev *sd, s32 *val)
 
 static int ar0543_raw_g_volatile_ctrl(struct v4l2_ctrl *ctrl)
 {
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
+	struct ar0543_raw_device *dev =
+	    container_of(ctrl->handler, struct ar0543_raw_device, ctrl_handler);
 	int ret = 0;
 
 	switch (ctrl->id) {
