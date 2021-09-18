@@ -2030,7 +2030,7 @@ static int ar0543_raw_probe(struct i2c_client *client,
 	dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	dev->pad.flags = MEDIA_PAD_FL_SOURCE;
 	dev->sd.entity.ops = &ar0543_raw_entity_ops;
-	dev->sd.entity.function = MEDIA_ENT_T_V4L2_SUBDEV_SENSOR;
+	dev->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
 #ifdef CONFIG_ME175CG
 	dev->format.code = MEDIA_BUS_FMT_SGBRG10_1X10;
 #else
