@@ -1546,7 +1546,6 @@ static int ar0543_raw_detect(struct i2c_client *client, u16 *id, u8 *revision)
 {
 	struct i2c_adapter *adapter = client->adapter;
 	u16 reg;
-	ATD_ar0543_raw_status = 0;
 
 	/* i2c check */
 	if (!i2c_check_functionality(adapter, I2C_FUNC_I2C))
@@ -1573,8 +1572,6 @@ static int ar0543_raw_detect(struct i2c_client *client, u16 *id, u8 *revision)
 		return -ENODEV;
 	}
 	*revision = (u8)reg;
-
-	ATD_ar0543_raw_status = 1;
 
 	return 0;
 }
