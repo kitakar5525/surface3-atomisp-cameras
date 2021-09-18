@@ -50,9 +50,6 @@
 
 #define AR0543_RAW_INVALID_CONFIG	0xffffffff
 
-#define AR0543_RAW_MAX_FOCUS_POS	255
-#define AR0543_RAW_MAX_FOCUS_NEG	(-255)
-
 #define AR0543_RAW_INTG_UNIT_US	100
 #define AR0543_RAW_MCLK		192
 
@@ -107,13 +104,6 @@
 #define AR0543_RAW_GLOBAL_GAIN			0x305e
 #define AR0543_RAW_GLOBAL_GAIN_WR			0x1000
 #define AR0543_RAW_TEST_PATTERN_MODE		0x3070
-#define AR0543_RAW_VCM_SLEW_STEP			0x30F0
-#define AR0543_RAW_VCM_SLEW_STEP_MAX		0x7
-#define AR0543_RAW_VCM_SLEW_STEP_MASK		0x7
-#define AR0543_RAW_VCM_CODE			0x30F2
-#define AR0543_RAW_VCM_SLEW_TIME			0x30F4
-#define AR0543_RAW_VCM_SLEW_TIME_MAX		0xffff
-#define AR0543_RAW_VCM_ENABLE			0x8000
 
 /* ar0543_raw SCCB */
 #define AR0543_RAW_SCCB_CTRL			0x3100
@@ -176,12 +166,6 @@
 #define	AR0543_RAW_STATUS_STANDBY		0x2
 #define	AR0543_RAW_STATUS_ACTIVE		0x3
 #define	AR0543_RAW_STATUS_VIEWFINDER	0x4
-
-//ASUS_BSP Wesley, for vcm test
-#define VCM_ADDR           0x0c
-//#define VCM_CODE_MSB       0x03
-//#define VCM_CODE_LSB       0x04
-#define VCM_MAX_FOCUS_POS  1023
 
 struct s_ctrl_id {
 	struct v4l2_queryctrl qc;
@@ -325,19 +309,15 @@ struct ar0543_raw_device {
 	u16 coarse_itg;
 	u16 fine_itg;
 	u16 gain;
-	u32 focus;
 	u16 pixels_per_line;
 	u16 lines_per_frame;
 	u8 fps;
 	int run_mode;
-	struct timespec timestamp_t_focus_abs;
 	s16 number_of_steps;
 	struct mutex input_lock; /* serialize sensor's ioctl */
 	void *otp_data;
 	struct ar0543_raw_af_data af_data;
 	void *fuseid;
-	/* Older VCMs could not maintain the focus position in standby mode. */
-	bool keeps_focus_pos;
 };
 
 #define AR0543_RAW_MAX_WRITE_BUF_SIZE	32
@@ -372,14 +352,6 @@ struct ar0543_raw_write_ctrl {
 #define GROUPED_PARAMETER_HOLD_ENABLE	{AR0543_RAW_8BIT, {0x0104}, 0x1}
 
 #define GROUPED_PARAMETER_HOLD_DISABLE	{AR0543_RAW_8BIT, {0x0104}, 0x0}
-
-#define INIT_VCM_CONTROL {AR0543_RAW_16BIT, {0x30F0}, 0x800C} /* slew_rate[2:0] */
-static const struct ar0543_raw_reg ar0543_raw_init_vcm[] = {
-	INIT_VCM_CONTROL,				   /* VCM_CONTROL */
-	{AR0543_RAW_16BIT, {0x30F2}, 0x0000}, /* VCM_NEW_CODE */
-	{AR0543_RAW_16BIT, {0x30F4}, 0x0080}, /* VCM_STEP_TIME */
-	{AR0543_RAW_TOK_TERM, {0}, 0}
-};
 
 //#define RESET_REGISTER	{AR0543_RAW_16BIT, {0x301A}, 0x4A38}
 static const struct ar0543_raw_reg ar0543_raw_reset_register[] = {

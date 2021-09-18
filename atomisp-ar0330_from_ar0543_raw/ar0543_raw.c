@@ -52,21 +52,6 @@
 #define PR3_2_FW 0x0400
 #define PR3_3_FW 0x0500
 
-
-#define VCM_MODE            0x02
-#define VCM_MOVE_TIME       0x03
-#define VCM_CODE_MSB        0x04
-#define VCM_CODE_LSB        0x05
-#define VCM_THRESHOLD_MSB   0x06
-#define VCM_THRESHOLD_LSB   0x07
-
-#define RING_CTRL           0x1   //enable Ringing
-#define RING_MODE           0x15  //Owen ARC MODE = 0x15
-#define VCM_FREQ            0x60  //Owen 87Hz Resonant freq.
-#define VCM_TRSH_MValue     0x00  //Owen Threshold MSB
-#define VCM_TRSH_LValue     0xa0  //Owen Threshold LSB
-
-
 /* divides a by b using half up rounding and div/0 prevention
  * (result is 0 if b == 0) */
 #define divsave_rounded(a, b)	(((b) != 0) ? (((a)+((b)>>1))/(b)) : (-1))
@@ -391,79 +376,6 @@ static int ar0543_raw_write_reg_array(struct i2c_client *client,
 	}
 
 	return __ar0543_raw_flush_reg_array(client, &ctrl);
-}
-
-static int ar0543_raw_t_focus_abs(struct v4l2_subdev *sd, s32 value)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	int ret = 0;
-	u8 msb, lsb;
-
-        value = clamp(value, 0, VCM_MAX_FOCUS_POS);
-        msb = (((value >> 8) & 0x03)| RING_CTRL<<2);  //owen for Arc enable
-        lsb = (value & 0xff);
-
-        //printk("%s: ========== FOCUS_POS:%x,%x,%x \n", __func__, value,msb,lsb);
-        ret = vcm_i2c_wr8(client, VCM_CODE_MSB, msb);
-        ret = vcm_i2c_wr8(client, VCM_CODE_LSB, lsb);
-
-	//ret = ar0543_raw_write_reg(client, AR0543_RAW_16BIT, AR0543_RAW_VCM_CODE, value);
-	if (ret == 0) {
-		dev->number_of_steps = value - dev->focus;
-		dev->focus = value;
-	//	getnstimeofday(&(dev->timestamp_t_focus_abs));
-	}
-	return ret;
-}
-
-static int ar0543_raw_t_focus_rel(struct v4l2_subdev *sd, s32 value)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	return ar0543_raw_t_focus_abs(sd, dev->focus + value);
-}
-
-#define DELAY_PER_STEP_NS	1000000
-#define DELAY_MAX_PER_STEP_NS	(1000000*40)
-static int ar0543_raw_q_focus_status(struct v4l2_subdev *sd, s32 *value)
-{
-	u32 status = 0;
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	struct timespec temptime;
-	const struct timespec timedelay = {
-		0,
-		min((u32)abs(dev->number_of_steps)*DELAY_PER_STEP_NS,
-			(u32)DELAY_MAX_PER_STEP_NS),
-	};
-
-	getnstimeofday(&temptime);
-
-	temptime = timespec_sub(temptime, (dev->timestamp_t_focus_abs));
-
-	if (timespec_compare(&temptime, &timedelay) <= 0) {
-		status |= ATOMISP_FOCUS_STATUS_MOVING;
-		status |= ATOMISP_FOCUS_HP_IN_PROGRESS;
-	} else {
-		status |= ATOMISP_FOCUS_STATUS_ACCEPTS_NEW_MOVE;
-		status |= ATOMISP_FOCUS_HP_COMPLETE;
-	}
-	*value = status;
-	return 0;
-}
-
-static int ar0543_raw_q_focus_abs(struct v4l2_subdev *sd, s32 *value)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	s32 val;
-
-	ar0543_raw_q_focus_status(sd, &val);
-
-	if (val & ATOMISP_FOCUS_STATUS_MOVING)
-		*value  = dev->focus - dev->number_of_steps;
-	else
-		*value  = dev->focus ;
-
-	return 0;
 }
 
 static int ar0543_raw_real_to_register_gain(u16 gain, u16 *real_gain)
@@ -890,14 +802,7 @@ static int ar0543_raw_init_registers(struct v4l2_subdev *sd)
 {
 	int ret;
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
-        vcm_i2c_wr8(client, 0x01, 0x01); // vcm init test
 
-	//owen  Arc function initial setting
-	vcm_i2c_wr8(client, VCM_MODE, RING_MODE);
-	vcm_i2c_wr8(client, VCM_MOVE_TIME, VCM_FREQ);
-	vcm_i2c_wr8(client, VCM_THRESHOLD_MSB,  VCM_TRSH_MValue);
-	vcm_i2c_wr8(client, VCM_THRESHOLD_LSB,  VCM_TRSH_LValue);
-	//printk("%s: ========== initial setting:%x,%x,%x,%x \n", __func__, RING_MODE,VCM_FREQ,VCM_TRSH_MValue,VCM_TRSH_LValue);
 	ret  = ar0543_raw_write_reg_array(client, ar0543_raw_reset_register);
 	return ret;
 }
@@ -911,31 +816,9 @@ static int __ar0543_raw_init(struct v4l2_subdev *sd, u32 val)
 	/* set inital registers */
 	ret = ar0543_raw_init_registers(sd);
 
-	/*set VCM to home position */
-	//ret |= ar0543_raw_t_focus_abs(sd, HOME_POS);
-
 	/* restore settings */
 	ar0543_raw_res = ar0543_raw_res_preview;
 	N_RES = N_RES_PREVIEW;
-
-	/* The only way to detect whether this VCM maintains focus after putting
-	 * the sensor into standby mode is by looking at the SCU FW version.
-	 * PR3.3 or higher runs on FW version 05.00 or higher.
-	 * We cannot distinguish between PR3.2 and PR3.25, so we need to be
-	 * conservative. PR3.25 owners can change the comparison to compare
-	 * to PR3_2_FW instead of PR3_3_FW for testing purposes.
-	 */
-	dev->keeps_focus_pos = false;
-	ret |= rpmsg_send_generic_command(IPCMSG_FW_REVISION, 0, NULL, 0,
-				       (u32 *)fw_rev, 4);
-	if (ret == 0) {
-		u16 fw_version = (fw_rev[15] << 8) | fw_rev[14];
-		dev->keeps_focus_pos = fw_version >= PR3_3_FW;
-	}
-	if (!dev->keeps_focus_pos) {
-		v4l2_warn(sd, "VCM does not maintain focus position in standby"
-			      "mode, using software workaround\n");
-	}
 
 	return ret;
 }
@@ -959,7 +842,6 @@ static void ar0543_raw_uninit(struct v4l2_subdev *sd)
 	dev->coarse_itg = 0;
 	dev->fine_itg   = 0;
 	dev->gain       = 0;
-	dev->focus      = AR0543_RAW_INVALID_CONFIG;
 }
 
 static int power_up(struct v4l2_subdev *sd)
@@ -1242,30 +1124,6 @@ static int ar0543_raw_test_pattern(struct v4l2_subdev *sd, s32 value)
 	return ar0543_raw_write_reg(client, AR0543_RAW_16BIT, 0x3070, value);
 }
 
-
-static int ar0543_raw_t_vcm_slew(struct v4l2_subdev *sd, s32 value)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-
-	if (value > AR0543_RAW_VCM_SLEW_STEP_MAX)
-		return -EINVAL;
-
-	return ar0543_raw_rmw_reg(client, AR0543_RAW_16BIT, AR0543_RAW_VCM_SLEW_STEP,
-				AR0543_RAW_VCM_SLEW_STEP_MASK, value);
-}
-
-static int ar0543_raw_t_vcm_timing(struct v4l2_subdev *sd, s32 value)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-
-	/* Max 16 bits */
-	if (value > AR0543_RAW_VCM_SLEW_TIME_MAX)
-		return -EINVAL;
-
-	return ar0543_raw_write_reg(client, AR0543_RAW_16BIT, AR0543_RAW_VCM_SLEW_TIME,
-				 value);
-}
-
 static int ar0543_raw_g_focal(struct v4l2_subdev *sd, s32 *val)
 {
 	*val = (AR0543_RAW_FOCAL_LENGTH_NUM << 16) | AR0543_RAW_FOCAL_LENGTH_DEM;
@@ -1330,72 +1188,6 @@ static struct ar0543_raw_control ar0543_raw_controls[] = {
 			.default_value = 0,
 		},
 		.tweak = ar0543_raw_test_pattern,
-	},
-	{
-		.qc = {
-			.id = V4L2_CID_FOCUS_ABSOLUTE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focus move absolute",
-			.minimum = 0,
-			.maximum = VCM_MAX_FOCUS_POS,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.tweak = ar0543_raw_t_focus_abs,
-		//.query = ar0543_raw_q_focus_abs,
-	},
-	{
-		.qc = {
-			.id = V4L2_CID_FOCUS_RELATIVE,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focus move relative",
-			.minimum = AR0543_RAW_MAX_FOCUS_NEG,
-			.maximum = AR0543_RAW_MAX_FOCUS_POS,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.tweak = ar0543_raw_t_focus_rel,
-	},
-	{
-		.qc = {
-			.id = V4L2_CID_FOCUS_STATUS,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "focus status",
-			.minimum = 0,
-			.maximum = 100, /* allow enum to grow in the future */
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.query = ar0543_raw_q_focus_status,
-	},
-	{
-		.qc = {
-			.id = V4L2_CID_VCM_SLEW,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "vcm slew",
-			.minimum = 0,
-			.maximum = AR0543_RAW_VCM_SLEW_STEP_MAX,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.tweak = ar0543_raw_t_vcm_slew,
-	},
-	{
-		.qc = {
-			.id = V4L2_CID_VCM_TIMEING,
-			.type = V4L2_CTRL_TYPE_INTEGER,
-			.name = "vcm step time",
-			.minimum = 0,
-			.maximum = AR0543_RAW_VCM_SLEW_TIME_MAX,
-			.step = 1,
-			.default_value = 0,
-			.flags = 0,
-		},
-		.tweak = ar0543_raw_t_vcm_timing,
 	},
 	{
 		.qc = {
@@ -1800,24 +1592,7 @@ static int ar0543_raw_s_stream(struct v4l2_subdev *sd, int enable)
 	printk("%s enable %d\n", __func__, enable);
 	mutex_lock(&dev->input_lock);
 	if (enable) {
-		if (!dev->keeps_focus_pos) {
-			struct ar0543_raw_reg ar0543_raw_stream_enable[] = {
-				ar0543_raw_streaming[0],
-				{AR0543_RAW_16BIT, {0x30F2}, 0x0000}, /* VCM_NEW_CODE */
-				INIT_VCM_CONTROL,
-				{AR0543_RAW_16BIT, {0x30F2}, 0x0000}, /* VCM_NEW_CODE */
-				{AR0543_RAW_TOK_DELAY, {0}, 60},
-				{AR0543_RAW_TOK_TERM, {0}, 0}
-			};
-
-			ar0543_raw_stream_enable[1].val = dev->focus + 1;
-			ar0543_raw_stream_enable[3].val = dev->focus;
-
-			ret = ar0543_raw_write_reg_array(client, ar0543_raw_stream_enable);
-		} else {
-			ret = ar0543_raw_write_reg_array(client, ar0543_raw_streaming);
-		}
-
+		ret = ar0543_raw_write_reg_array(client, ar0543_raw_streaming);
 		if (ret != 0) {
 			mutex_unlock(&dev->input_lock);
 			v4l2_err(client, "write_reg_array err\n");
@@ -1825,7 +1600,6 @@ static int ar0543_raw_s_stream(struct v4l2_subdev *sd, int enable)
 		}
 		dev->streaming = 1;
 	} else {
-
 		ret = ar0543_raw_write_reg_array(client, ar0543_raw_soft_standby);
 		if (ret != 0) {
 			mutex_unlock(&dev->input_lock);
@@ -2268,8 +2042,6 @@ static int ar0543_raw_probe(struct i2c_client *client,
 		v4l2_err(client, "%s: out of memory\n", __func__);
 		return -ENOMEM;
 	}
-
-	create_vcm_proc_file(); //For DIT VCM Debug Interface+++
 
 #ifdef CONFIG_PF450CL
 	create_led_proc_file(); //For LED FLASH Controll+++
