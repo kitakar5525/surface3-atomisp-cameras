@@ -1875,6 +1875,7 @@ static int ar0543_raw_remove(struct i2c_client *client)
 
 	dev->platform_data->csi_cfg(sd, 0);
 	v4l2_device_unregister_subdev(sd);
+	atomisp_gmin_remove_subdev(sd);
 	v4l2_ctrl_handler_free(&dev->ctrl_handler);
 	kfree(dev->otp_data);
 	kfree(dev->fuseid);
