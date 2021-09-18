@@ -6,6 +6,8 @@ ccflags-y += -I $(KDIR)/$(ATOMISP_INC)
 obj-m += atomisp-ar0330/atomisp-ar0330.o
 obj-m += atomisp-ov883x/atomisp-ov883x.o
 
+obj-y += micam/
+
 all:
 	make -C $(KDIR) M=$(PWD) modules
 
