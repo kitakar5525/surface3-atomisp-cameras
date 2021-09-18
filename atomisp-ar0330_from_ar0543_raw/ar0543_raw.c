@@ -2071,8 +2071,6 @@ static int ar0543_raw_probe(struct i2c_client *client,
 		return ret;
 	}
 
-	main_sd = &dev->sd;
-
 	return 0;
 }
 
