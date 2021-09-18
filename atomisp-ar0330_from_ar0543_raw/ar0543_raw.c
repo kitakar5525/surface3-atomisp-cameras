@@ -2037,7 +2037,7 @@ static int ar0543_raw_probe(struct i2c_client *client,
 	dev->format.code = MEDIA_BUS_FMT_SGRBG10_1X10;
 #endif
 
-	ret = media_entity_init(&dev->sd.entity, 1, &dev->pad, 0);
+	ret = media_entity_pads_init(&dev->sd.entity, 1, &dev->pad);
 	if (ret) {
 		ar0543_raw_remove(client);
 		return ret;
