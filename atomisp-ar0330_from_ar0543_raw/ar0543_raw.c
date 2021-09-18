@@ -985,10 +985,6 @@ ar0543_raw_get_intg_factor(struct i2c_client *client,
 	if (info == NULL)
 		return -EINVAL;
 
-	/* To make Klocwork happy*/
-	buf.reserved[0] = 0;
-	buf.reserved[1] = 0;
-
 	memset(data, 0, AR0543_RAW_SHORT_MAX * sizeof(u16));
 	if (ar0543_raw_read_reg(client, 12, AR0543_RAW_VT_PIX_CLK_DIV, data))
 		return -EINVAL;
