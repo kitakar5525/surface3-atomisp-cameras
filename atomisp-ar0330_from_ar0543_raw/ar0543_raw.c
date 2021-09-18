@@ -1534,15 +1534,6 @@ static int ar0543_raw_s_config(struct v4l2_subdev *sd,
 
 	mutex_lock(&dev->input_lock);
 
-	if (dev->platform_data->platform_init) {
-		ret = dev->platform_data->platform_init(client);
-		if (ret) {
-			mutex_unlock(&dev->input_lock);
-			dev_err(&client->dev, "ar0543_raw platform init err\n");
-			return ret;
-		}
-	}
-
 	/*
 	 * The initial state of physical power is unknown
 	 * so first power down it to make it to a known
