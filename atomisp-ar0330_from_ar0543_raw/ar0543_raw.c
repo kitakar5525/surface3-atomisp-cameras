@@ -1996,19 +1996,7 @@ static struct i2c_driver ar0543_raw_driver = {
 	.remove = ar0543_raw_remove,
 	.id_table = ar0543_raw_id,
 };
-
-static __init int init_ar0543_raw(void)
-{
-	return i2c_add_driver(&ar0543_raw_driver);
-}
-
-static __exit void exit_ar0543_raw(void)
-{
-	i2c_del_driver(&ar0543_raw_driver);
-}
-
-module_init(init_ar0543_raw);
-module_exit(exit_ar0543_raw);
+module_i2c_driver(ar0543_raw_driver);
 
 MODULE_DESCRIPTION("A low-level driver for Aptina AR0543_RAW sensors");
 MODULE_LICENSE("GPL");
