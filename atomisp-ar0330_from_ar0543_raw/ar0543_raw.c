@@ -1495,41 +1495,6 @@ static int ar0543_raw_s_stream(struct v4l2_subdev *sd, int enable)
 	return 0;
 }
 
-static int ar0543_raw_enum_frameintervals(struct v4l2_subdev *sd,
-				       struct v4l2_frmivalenum *fival)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-	unsigned int index = fival->index;
-
-	if (index >= N_RES)
-		return -EINVAL;
-
-	mutex_lock(&dev->input_lock);
-
-	/*
-	 * Since the isp will donwscale the resolution to the right size,
-	 * find the nearest one that will allow the isp to do so important
-	 * to ensure that the resolution requested is padded correctly by
-	 * the requester, which is the atomisp driver in this case.
-	 */
-	index = nearest_resolution_index(fival->width, fival->height);
-
-	if (-1 == index) {
-		mutex_unlock(&dev->input_lock);
-		return -EINVAL;
-	}
-
-	fival->type = V4L2_FRMIVAL_TYPE_DISCRETE;
-/*	fival->width = ar0543_raw_res[index].width;
-	fival->height = ar0543_raw_res[index].height; */
-	fival->discrete.numerator = 1;
-	fival->discrete.denominator = ar0543_raw_res[index].fps;
-
-	mutex_unlock(&dev->input_lock);
-
-	return 0;
-}
-
 static int ar0543_raw_s_config(struct v4l2_subdev *sd,
 			    int irq, void *pdata)
 {
@@ -1859,7 +1824,6 @@ static struct v4l2_ctrl_config ar0543_raw_controls[] = {
 
 static const struct v4l2_subdev_video_ops ar0543_raw_video_ops = {
 	.s_stream = ar0543_raw_s_stream,
-	.enum_frameintervals = ar0543_raw_enum_frameintervals,
 	.try_mbus_fmt = ar0543_raw_try_mbus_fmt,
 	.g_mbus_fmt = ar0543_raw_g_mbus_fmt,
 	.s_mbus_fmt = ar0543_raw_s_mbus_fmt,
