@@ -1908,6 +1908,7 @@ static int ar0543_raw_probe(struct i2c_client *client,
 {
 	struct ar0543_raw_device *dev;
 	int ret;
+	void *pdata;
 
 	/* allocate sensor device & init sub device */
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
@@ -1925,15 +1926,21 @@ static int ar0543_raw_probe(struct i2c_client *client,
 	dev->fmt_idx = 0;
 	v4l2_i2c_subdev_init(&(dev->sd), client, &ar0543_raw_ops);
 
-	if (client->dev.platform_data) {
-		ret = ar0543_raw_s_config(&dev->sd, client->irq,
-				       client->dev.platform_data);
-		if (ret) {
-			v4l2_device_unregister_subdev(&dev->sd);
-			kfree(dev);
-			return ret;
-		}
+	pdata = gmin_camera_platform_data(&dev->sd,
+					  ATOMISP_INPUT_FORMAT_RAW_10,
+					  atomisp_bayer_order_bggr);
+	if (!pdata) {
+		ret = -EINVAL;
+		goto out_free;
 	}
+
+	ret = ar0543_raw_s_config(&dev->sd, client->irq, pdata);
+	if (ret)
+		goto out_free;
+
+	ret = atomisp_register_i2c_module(&dev->sd, pdata, RAW_CAMERA);
+	if (ret)
+		goto out_free;
 
 	dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	dev->pad.flags = MEDIA_PAD_FL_SOURCE;
@@ -1958,6 +1965,11 @@ static int ar0543_raw_probe(struct i2c_client *client,
 	}
 
 	return 0;
+
+out_free:
+	v4l2_device_unregister_subdev(&dev->sd);
+	kfree(dev);
+	return ret;
 }
 
 static const struct i2c_device_id ar0543_raw_id[] = {
