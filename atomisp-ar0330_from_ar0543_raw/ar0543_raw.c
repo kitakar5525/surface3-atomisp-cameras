@@ -1988,7 +1988,6 @@ MODULE_DEVICE_TABLE(acpi, ar0330_acpi_ids);
 
 static struct i2c_driver ar0543_raw_driver = {
 	.driver = {
-		.owner = THIS_MODULE,
 		.name = AR0543_RAW_NAME,
 		.acpi_match_table = ACPI_PTR(ar0330_acpi_ids),
 	},
