@@ -1712,7 +1712,7 @@ static const struct v4l2_ctrl_ops ar0543_raw_ctrl_ops = {
 	.s_ctrl = ar0543_raw_s_ctrl,
 };
 
-static struct v4l2_ctrl_config ar0543_raw_controls[] = {
+static const struct v4l2_ctrl_config ar0543_raw_controls[] = {
 	{
 		.ops = &ar0543_raw_ctrl_ops,
 		.id = V4L2_CID_EXPOSURE_ABSOLUTE,
