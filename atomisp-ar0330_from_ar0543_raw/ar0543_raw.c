@@ -1964,13 +1964,19 @@ static const struct i2c_device_id ar0543_raw_id[] = {
 	{AR0543_RAW_NAME, 0},
 	{}
 };
-
 MODULE_DEVICE_TABLE(i2c, ar0543_raw_id);
+
+static const struct acpi_device_id ar0330_acpi_ids[] = {
+	{"APTA0330"},
+	{},
+};
+MODULE_DEVICE_TABLE(acpi, ar0330_acpi_ids);
 
 static struct i2c_driver ar0543_raw_driver = {
 	.driver = {
 		.owner = THIS_MODULE,
 		.name = AR0543_RAW_NAME,
+		.acpi_match_table = ACPI_PTR(ar0330_acpi_ids),
 	},
 	.probe = ar0543_raw_probe,
 	.remove = ar0543_raw_remove,
