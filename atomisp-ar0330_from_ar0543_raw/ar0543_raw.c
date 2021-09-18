@@ -1840,49 +1840,6 @@ ar0543_raw_set_pad_format(struct v4l2_subdev *sd,
 }
 
 static int
-ar0543_raw_s_parm(struct v4l2_subdev *sd, struct v4l2_streamparm *param)
-{
-	struct ar0543_raw_device *dev = to_ar0543_raw_sensor(sd);
-
-	mutex_lock(&dev->input_lock);
-
-	if (dev->streaming) {
-		mutex_unlock(&dev->input_lock);
-		return -EBUSY;
-	}
-
-	dev->run_mode = param->parm.capture.capturemode;
-
-	switch (dev->run_mode) {
-	case CI_MODE_VIDEO:
-		ar0543_raw_res = ar0543_raw_res_video;
-		N_RES = N_RES_VIDEO;
-		break;
-	case CI_MODE_STILL_CAPTURE:
-		//ar0543_raw_res = ar0543_raw_res_still;
-		//N_RES = N_RES_STILL;
-		//break;
-	default:
-		ar0543_raw_res = ar0543_raw_res_preview;
-		N_RES = N_RES_PREVIEW;
-	}
-
-	/* Reset sensor mode */
-	/* we do not reset sensor mode, as we now only have one s_mbus_fmt following s_parm
-	dev->fmt_idx = 0;
-	dev->fps = ar0543_raw_res[dev->fmt_idx].fps;
-	dev->pixels_per_line = ar0543_raw_res[dev->fmt_idx].pixels_per_line;
-	dev->lines_per_frame = ar0543_raw_res[dev->fmt_idx].lines_per_frame;
-	dev->coarse_itg = 0;
-	dev->fine_itg = 0;
-	dev->gain = 0;
-	*/
-
-	mutex_unlock(&dev->input_lock);
-	return 0;
-}
-
-static int
 ar0543_raw_g_frame_interval(struct v4l2_subdev *sd,
 				struct v4l2_subdev_frame_interval *interval)
 {
@@ -1951,7 +1908,6 @@ static const struct v4l2_subdev_video_ops ar0543_raw_video_ops = {
 	.try_mbus_fmt = ar0543_raw_try_mbus_fmt,
 	.g_mbus_fmt = ar0543_raw_g_mbus_fmt,
 	.s_mbus_fmt = ar0543_raw_s_mbus_fmt,
-	.s_parm = ar0543_raw_s_parm,
 	.g_frame_interval = ar0543_raw_g_frame_interval,
 };
 
