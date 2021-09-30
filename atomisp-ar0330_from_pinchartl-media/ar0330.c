@@ -17,7 +17,6 @@
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/pm.h>
-#include <linux/pm_runtime.h>
 #include <linux/slab.h>
 #include <linux/videodev2.h>
 
@@ -1075,8 +1074,6 @@ static int ar0330_s_stream(struct v4l2_subdev *subdev, int enable)
 
 	if (!enable) {
 		ret = ar0330_write8(ar0330, AR0330_MODE_SELECT, 0);
-		pm_runtime_mark_last_busy(ar0330->dev);
-		pm_runtime_put_autosuspend(ar0330->dev);
 
 		mutex_lock(ar0330->ctrls.lock);
 		ar0330->streaming = false;
@@ -1094,10 +1091,6 @@ static int ar0330_s_stream(struct v4l2_subdev *subdev, int enable)
 	 */
 	ar0330->streaming = true;
 
-	ret = pm_runtime_get_sync(ar0330->dev);
-	if (ret < 0)
-		goto done;
-
 	ret = ar0330_pll_configure(ar0330);
 	if (ret < 0)
 		goto done;
@@ -1114,14 +1107,8 @@ static int ar0330_s_stream(struct v4l2_subdev *subdev, int enable)
 			    AR0330_MODE_SELECT_STREAM);
 
 done:
-	if (ret < 0) {
-		/*
-		 * In case of error, turn the power off synchronously as the
-		 * device likely has no other chance to recover.
-		 */
-		pm_runtime_put_sync(ar0330->dev);
+	if (ret < 0)
 		ar0330->streaming = false;
-	}
 
 	mutex_unlock(ar0330->ctrls.lock);
 
@@ -1564,41 +1551,6 @@ static void ar0330_power_off(struct ar0330 *ar0330)
 		dev_err(&client->dev, "vprog failed.\n");
 }
 
-static int ar0330_runtime_resume(struct device *dev)
-{
-	struct i2c_client *client = to_i2c_client(dev);
-	struct v4l2_subdev *subdev = i2c_get_clientdata(client);
-	struct ar0330 *ar0330 = to_ar0330(subdev);
-	int ret;
-
-	ret = ar0330_power_on(ar0330);
-	if (ret < 0)
-		return ret;
-
-	ret = ar0330_power_on_init(ar0330);
-	if (ret < 0) {
-		ar0330_power_off(ar0330);
-		return ret;
-	}
-
-	return 0;
-}
-
-static int ar0330_runtime_suspend(struct device *dev)
-{
-	struct i2c_client *client = to_i2c_client(dev);
-	struct v4l2_subdev *subdev = i2c_get_clientdata(client);
-	struct ar0330 *ar0330 = to_ar0330(subdev);
-
-	ar0330_power_off(ar0330);
-
-	return 0;
-}
-
-static const struct dev_pm_ops ar0330_pm_ops = {
-        SET_RUNTIME_PM_OPS(ar0330_runtime_suspend, ar0330_runtime_resume, NULL)
-};
-
 /* -----------------------------------------------------------------------------
  * Driver initialization and probing
  */
@@ -1781,34 +1733,14 @@ static int ar0330_probe(struct i2c_client *client,
 		goto error_media;
 	}
 
-	/*
-	 * Enable runtime PM. As the device has been powered manually, mark it
-	 * as active, and increase the usage count without resuming the device.
-	 */
-	pm_runtime_set_active(ar0330->dev);
-	pm_runtime_get_noresume(ar0330->dev);
-	pm_runtime_enable(ar0330->dev);
-
 	ret = v4l2_async_register_subdev(&ar0330->subdev);
 	if (ret < 0) {
 		dev_err(ar0330->dev, "Subdev registration failed\n");
-		goto error_pm;
+		goto error_media;
 	}
-
-	/*
-	 * Finally, enable autosuspend and decrease the usage count. The device
-	 * will get suspended after the autosuspend delay, turning the power
-	 * off.
-	 */
-	pm_runtime_set_autosuspend_delay(ar0330->dev, 1000);
-	pm_runtime_use_autosuspend(ar0330->dev);
-	pm_runtime_put_autosuspend(ar0330->dev);
 
 	return 0;
 
-error_pm:
-	pm_runtime_disable(ar0330->dev);
-	pm_runtime_put_noidle(ar0330->dev);
 error_media:
 	media_entity_cleanup(&ar0330->subdev.entity);
 error_gmin:
@@ -1830,16 +1762,8 @@ static int ar0330_remove(struct i2c_client *client)
 	v4l2_ctrl_handler_free(&ar0330->ctrls);
 	media_entity_cleanup(&subdev->entity);
 
-	/*
-	 * Disable runtime PM. In case runtime PM is disabled in the kernel,
-	 * make sure to turn power off manually.
-	 */
-	pm_runtime_disable(ar0330->dev);
-	if (!pm_runtime_status_suspended(ar0330->dev))
-		ar0330_power_off(ar0330);
-	pm_runtime_set_suspended(ar0330->dev);
-
 	ar0330->platform_data->csi_cfg(subdev, 0);
+	ar0330_power_off(ar0330);
 	v4l2_async_unregister_subdev(subdev);
 	atomisp_gmin_remove_subdev(subdev);
 
@@ -1863,7 +1787,6 @@ MODULE_DEVICE_TABLE(acpi, ar0330_acpi_ids);
 static struct i2c_driver ar0330_i2c_driver = {
 	.driver = {
 		.name = "ar0330",
-		.pm = &ar0330_pm_ops,
 		.acpi_match_table = ACPI_PTR(ar0330_acpi_ids),
 	},
 	.probe          = ar0330_probe,
