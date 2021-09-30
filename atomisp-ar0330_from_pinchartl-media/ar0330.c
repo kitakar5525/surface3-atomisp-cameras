@@ -18,7 +18,6 @@
 #include <linux/of.h>
 #include <linux/pm.h>
 #include <linux/pm_runtime.h>
-#include <linux/regulator/consumer.h>
 #include <linux/slab.h>
 #include <linux/videodev2.h>
 
@@ -137,7 +136,6 @@ struct ar0330 {
 	unsigned int version;
 
 	struct gpio_desc *reset;
-	struct regulator_bulk_data supplies[3];
 
 	struct v4l2_subdev subdev;
 	struct media_pad pad;
@@ -1439,16 +1437,6 @@ static const struct v4l2_subdev_ops ar0330_subdev_ops = {
 
 static int ar0330_power_on(struct ar0330 *ar0330)
 {
-	int ret;
-
-	ret = regulator_bulk_enable(ARRAY_SIZE(ar0330->supplies),
-				    ar0330->supplies);
-	if (ret < 0) {
-		dev_err(ar0330->dev, "Failed to enable power supplies: %d\n",
-			ret);
-		return ret;
-	}
-
 	/* Assert reset for 1ms */
 	if (ar0330->reset) {
 		gpiod_set_value(ar0330->reset, 1);
@@ -1467,7 +1455,7 @@ static int ar0330_power_on_init(struct ar0330 *ar0330)
 
 static void ar0330_power_off(struct ar0330 *ar0330)
 {
-	regulator_bulk_disable(ARRAY_SIZE(ar0330->supplies), ar0330->supplies);
+	/* nothing here currently */
 }
 
 static int ar0330_runtime_resume(struct device *dev)
@@ -1555,7 +1543,6 @@ static int ar0330_probe(struct i2c_client *client,
 {
 	unsigned long rate = 24000000;
 	struct ar0330 *ar0330;
-	unsigned int i;
 	int ret;
 
 	ar0330 = kzalloc(sizeof(*ar0330), GFP_KERNEL);
@@ -1572,18 +1559,6 @@ static int ar0330_probe(struct i2c_client *client,
 		ret = PTR_ERR(ar0330->reset);
 		if (ret != -EPROBE_DEFER)
 			dev_err(ar0330->dev, "Failed to get reset GPIO: %d\n",
-				ret);
-		goto error_free;
-	}
-
-	for (i = 0; i < ARRAY_SIZE(ar0330->supplies); ++i)
-		ar0330->supplies[i].supply = ar0330_supply_names[i];
-
-	ret = devm_regulator_bulk_get(ar0330->dev, ARRAY_SIZE(ar0330->supplies),
-				      ar0330->supplies);
-	if (ret < 0) {
-		if (ret != -EPROBE_DEFER)
-			dev_err(ar0330->dev, "Failed to get power supplies: %d\n",
 				ret);
 		goto error_free;
 	}
