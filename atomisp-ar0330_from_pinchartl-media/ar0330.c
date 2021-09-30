@@ -1239,8 +1239,30 @@ static int ar0330_set_format(struct v4l2_subdev *subdev,
 			 max(__crop->height / 3, AR0330_WINDOW_HEIGHT_MIN),
 			 __crop->height);
 
+	if (!width) {
+		pr_err("%s(): width is 0, setting it to 1 to avoid divide error\n",
+		       __func__);
+		width = 1;
+	}
+	if (!height) {
+		pr_err("%s(): height is 0, setting it to 1 to avoid divide error\n",
+		       __func__);
+		height = 1;
+	}
+
 	hratio = DIV_ROUND_CLOSEST(__crop->width, width);
 	vratio = DIV_ROUND_CLOSEST(__crop->height, height);
+
+	if (!hratio) {
+		pr_err("%s(): hratio is 0, setting it to 1 to avoid divide error\n",
+		       __func__);
+		hratio = 1;
+	}
+	if (!vratio) {
+		pr_err("%s(): vratio is 0, setting it to 1 to avoid divide error\n",
+		       __func__);
+		vratio = 1;
+	}
 
 	__format = __ar0330_get_pad_format(ar0330, sd_state, format->pad,
 					    format->which);
