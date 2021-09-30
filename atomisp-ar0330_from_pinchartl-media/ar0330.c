@@ -1434,8 +1434,46 @@ static const struct v4l2_subdev_ops ar0330_subdev_ops = {
  * Power management
  */
 
+static int gpio_ctrl(struct v4l2_subdev *sd, bool flag)
+{
+	int ret;
+	struct ar0330 *dev = to_ar0330(sd);
+
+	if (!dev || !dev->platform_data)
+		return -ENODEV;
+
+	/* Surface 3 has only one GPIO pin for this sensor, but other device
+	 * might have two, not sure. */
+	if (flag) {
+		ret = dev->platform_data->gpio0_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+		/* Ignore return from second gpio, it may not be there */
+		dev->platform_data->gpio1_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+	} else {
+		dev->platform_data->gpio1_ctrl(sd, 0);
+		ret = dev->platform_data->gpio0_ctrl(sd, 0);
+	}
+	return ret;
+}
+
 static int ar0330_power_on(struct ar0330 *ar0330)
 {
+	int ret;
+
+	/* TODO: turning gpio off here, really needed? */
+	ret = gpio_ctrl(&ar0330->subdev, 0);
+	if (ret)
+		return ret;
+
+	/* gpio ctrl */
+	ret = gpio_ctrl(&ar0330->subdev, 1);
+	if (ret) {
+		ret = gpio_ctrl(&ar0330->subdev, 1);
+		if (ret)
+			return ret;
+	}
+
 	return 0;
 }
 
@@ -1446,7 +1484,16 @@ static int ar0330_power_on_init(struct ar0330 *ar0330)
 
 static void ar0330_power_off(struct ar0330 *ar0330)
 {
-	/* nothing here currently */
+	struct i2c_client *client = v4l2_get_subdevdata(&ar0330->subdev);
+	int ret;
+
+	/* gpio ctrl */
+	ret = gpio_ctrl(&ar0330->subdev, 0);
+	if (ret) {
+		ret = gpio_ctrl(&ar0330->subdev, 0);
+		if (ret)
+			dev_err(&client->dev, "gpio failed 2\n");
+	}
 }
 
 static int ar0330_runtime_resume(struct device *dev)
