@@ -1740,15 +1740,15 @@ static int ar0330_probe(struct i2c_client *client,
 					  ATOMISP_INPUT_FORMAT_RAW_10,
 					  atomisp_bayer_order_bggr);
 	if (!pdata)
-		goto error_media;
+		goto error_gmin;
 
 	ret = ar0330_s_config(&ar0330->subdev, client->irq, pdata);
 	if (ret)
-		goto error_media;
+		goto error_gmin;
 
 	ret = atomisp_register_i2c_module(&ar0330->subdev, pdata, RAW_CAMERA);
 	if (ret)
-		goto error_media;
+		goto error_gmin;
 
 	ar0330_init_cfg(&ar0330->subdev, NULL);
 
@@ -1786,6 +1786,8 @@ static int ar0330_probe(struct i2c_client *client,
 error_pm:
 	pm_runtime_disable(ar0330->dev);
 	pm_runtime_put_noidle(ar0330->dev);
+error_gmin:
+	atomisp_gmin_remove_subdev(&ar0330->subdev);
 error_media:
 	media_entity_cleanup(&ar0330->subdev.entity);
 error_ctrl:
@@ -1804,6 +1806,7 @@ static int ar0330_remove(struct i2c_client *client)
 
 	v4l2_ctrl_handler_free(&ar0330->ctrls);
 	v4l2_async_unregister_subdev(subdev);
+	atomisp_gmin_remove_subdev(subdev);
 	media_entity_cleanup(&subdev->entity);
 
 	/*
