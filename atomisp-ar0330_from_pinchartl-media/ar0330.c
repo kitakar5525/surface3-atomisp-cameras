@@ -150,6 +150,9 @@ struct ar0330 {
 
 	/* Registers cache */
 	u16 read_mode;
+
+	/* atomisp-specific stuff */
+	struct camera_sensor_platform_data *platform_data;
 };
 
 static struct ar0330 *to_ar0330(struct v4l2_subdev *sd)
