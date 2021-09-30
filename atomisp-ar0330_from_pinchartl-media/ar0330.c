@@ -30,6 +30,7 @@
 #include <media/v4l2-subdev.h>
 
 #include "smiapp-pll.h"
+#include "../include/linux/atomisp_gmin_platform.h"
 
 #define AR0330_PIXEL_ARRAY_WIDTH		2304U
 #define AR0330_PIXEL_ARRAY_HEIGHT		1536U
