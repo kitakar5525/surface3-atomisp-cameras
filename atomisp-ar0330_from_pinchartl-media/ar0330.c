@@ -11,7 +11,6 @@
 
 #include <linux/delay.h>
 #include <linux/device.h>
-#include <linux/gpio/consumer.h>
 #include <linux/i2c.h>
 #include <linux/log2.h>
 #include <linux/module.h>
@@ -134,8 +133,6 @@ struct ar0330 {
 
 	struct smiapp_pll pll;
 	unsigned int version;
-
-	struct gpio_desc *reset;
 
 	struct v4l2_subdev subdev;
 	struct media_pad pad;
@@ -1437,14 +1434,6 @@ static const struct v4l2_subdev_ops ar0330_subdev_ops = {
 
 static int ar0330_power_on(struct ar0330 *ar0330)
 {
-	/* Assert reset for 1ms */
-	if (ar0330->reset) {
-		gpiod_set_value(ar0330->reset, 1);
-		usleep_range(2000, 3000);
-		gpiod_set_value(ar0330->reset, 0);
-		usleep_range(10000, 11000);
-	}
-
 	return 0;
 }
 
@@ -1552,16 +1541,6 @@ static int ar0330_probe(struct i2c_client *client,
 	ar0330->client = client;
 	ar0330->dev = &client->dev;
 	ar0330->read_mode = 0;
-
-	ar0330->reset = devm_gpiod_get_optional(ar0330->dev, "reset",
-						GPIOD_OUT_HIGH);
-	if (IS_ERR(ar0330->reset)) {
-		ret = PTR_ERR(ar0330->reset);
-		if (ret != -EPROBE_DEFER)
-			dev_err(ar0330->dev, "Failed to get reset GPIO: %d\n",
-				ret);
-		goto error_free;
-	}
 
 	/*
 	 * Enable power management. The driver supports runtime PM, but needs to
