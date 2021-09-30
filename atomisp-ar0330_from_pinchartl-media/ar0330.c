@@ -1282,6 +1282,7 @@ static int ar0330_set_format(struct v4l2_subdev *subdev,
 					    format->which);
 	__format->width = __crop->width / hratio;
 	__format->height = __crop->height / vratio;
+	__format->code = ar0330->format.code;
 
 	format->format = *__format;
 
