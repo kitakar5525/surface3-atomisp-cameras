@@ -1623,6 +1623,63 @@ static int ar0330_identify(struct ar0330 *ar0330)
 	return 0;
 }
 
+static int ar0330_s_config(struct v4l2_subdev *sd,
+			   int irq, void *platform_data)
+{
+	struct ar0330 *dev = to_ar0330(sd);
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+	int ret = 0;
+
+	if (!platform_data)
+		return -ENODEV;
+
+	dev->platform_data =
+	    (struct camera_sensor_platform_data *)platform_data;
+
+	mutex_lock(dev->ctrls.lock);
+	/* power off the module, then power on it in future
+	 * as first power on by board may not fulfill the
+	 * power on sequqence needed by the module
+	 */
+	ar0330_power_off(dev);
+
+	ret = ar0330_power_on(dev);
+	if (ret) {
+		dev_err(&client->dev, "ar0330 power-up err.\n");
+		goto fail_power_on;
+	}
+
+	ret = ar0330_power_on_init(dev);
+	if (ret < 0)
+		goto fail_power_on;
+
+	ret = dev->platform_data->csi_cfg(sd, 1);
+	if (ret)
+		goto fail_csi_cfg;
+
+	/* config & detect sensor */
+	ret = ar0330_identify(dev);
+	if (ret < 0) {
+		dev_err(&client->dev, "ar0330_identify err s_config.\n");
+		goto fail_csi_cfg;
+	}
+
+	/* turn off sensor, after probed */
+	ar0330_power_off(dev);
+	mutex_unlock(dev->ctrls.lock);
+
+	return 0;
+
+fail_csi_cfg:
+	dev->platform_data->csi_cfg(sd, 0);
+fail_power_on:
+	ar0330_power_off(dev);
+	dev_err(&client->dev, "sensor power-gating failed\n");
+
+	mutex_unlock(dev->ctrls.lock);
+	return ret;
+}
+
 static int ar0330_probe(struct i2c_client *client,
 			 const struct i2c_device_id *did)
 {
@@ -1637,23 +1694,6 @@ static int ar0330_probe(struct i2c_client *client,
 	ar0330->client = client;
 	ar0330->dev = &client->dev;
 	ar0330->read_mode = 0;
-
-	/*
-	 * Enable power management. The driver supports runtime PM, but needs to
-	 * work when runtime PM is disabled in the kernel. To that end, power
-	 * the sensor on manually here, identify it, and fully initialize it.
-	 */
-	ret = ar0330_power_on(ar0330);
-	if (ret < 0)
-		goto error_free;
-
-	ret = ar0330_identify(ar0330);
-	if (ret < 0)
-		goto error_power;
-
-	ret = ar0330_power_on_init(ar0330);
-	if (ret < 0)
-		goto error_power;
 
 	/* Create V4L2 controls. */
 	v4l2_ctrl_handler_init(&ar0330->ctrls, 6);
