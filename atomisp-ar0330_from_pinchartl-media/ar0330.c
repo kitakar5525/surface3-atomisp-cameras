@@ -1809,10 +1809,10 @@ static int ar0330_probe(struct i2c_client *client,
 error_pm:
 	pm_runtime_disable(ar0330->dev);
 	pm_runtime_put_noidle(ar0330->dev);
-error_gmin:
-	atomisp_gmin_remove_subdev(&ar0330->subdev);
 error_media:
 	media_entity_cleanup(&ar0330->subdev.entity);
+error_gmin:
+	atomisp_gmin_remove_subdev(&ar0330->subdev);
 error_ctrl:
 	v4l2_ctrl_handler_free(&ar0330->ctrls);
 
