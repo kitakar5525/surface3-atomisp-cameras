@@ -1489,6 +1489,11 @@ static int ar0330_power_on(struct ar0330 *ar0330)
 {
 	int ret;
 
+	if (!ar0330->platform_data) {
+		dev_err(ar0330->dev, "no camera_sensor_platform_data");
+		return -ENODEV;
+	}
+
 	/* TODO: turning gpio off here, really needed? */
 	ret = gpio_ctrl(&ar0330->subdev, 0);
 	if (ret)
@@ -1510,8 +1515,15 @@ static int ar0330_power_on(struct ar0330 *ar0330)
 			goto fail_power;
 	}
 
+	/* flis clock control */
+	ret = ar0330->platform_data->flisclk_ctrl(&ar0330->subdev, 1);
+	if (ret)
+		goto fail_clk;
+
 	return 0;
 
+fail_clk:
+	gpio_ctrl(&ar0330->subdev, 0);
 fail_power:
 	power_ctrl(&ar0330->subdev, 0);
 	dev_err(ar0330->dev, "sensor power-up failed\n");
