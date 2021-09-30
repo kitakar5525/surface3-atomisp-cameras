@@ -1124,6 +1124,8 @@ __ar0330_get_pad_format(struct ar0330 *ar0330,
 			struct v4l2_subdev_state *sd_state,
 			unsigned int pad, u32 which)
 {
+	pr_info("%s() called\n", __func__);
+
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
 		return v4l2_subdev_get_try_format(&ar0330->subdev, sd_state,
@@ -1140,6 +1142,8 @@ __ar0330_get_pad_crop(struct ar0330 *ar0330,
 		      struct v4l2_subdev_state *sd_state,
 		      unsigned int pad, u32 which)
 {
+	pr_info("%s() called\n", __func__);
+
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
 		return v4l2_subdev_get_try_crop(&ar0330->subdev, sd_state,
@@ -1158,6 +1162,8 @@ static int ar0330_init_cfg(struct v4l2_subdev *subdev,
 	struct ar0330 *ar0330 = to_ar0330(subdev);
 	struct v4l2_mbus_framefmt *format;
 	struct v4l2_rect *crop;
+
+	pr_info("%s() called\n", __func__);
 
 	crop = __ar0330_get_pad_crop(ar0330, sd_state, 0, which);
 	crop->left = (AR0330_WINDOW_WIDTH_MAX - AR0330_WINDOW_WIDTH_DEF) / 2;
@@ -1181,6 +1187,8 @@ static int ar0330_enum_mbus_code(struct v4l2_subdev *subdev,
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
 
+	pr_info("%s() called\n", __func__);
+
 	if (code->pad || code->index)
 		return -EINVAL;
 
@@ -1193,6 +1201,8 @@ static int ar0330_enum_frame_size(struct v4l2_subdev *subdev,
 				  struct v4l2_subdev_frame_size_enum *fse)
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
+
+	pr_info("%s() called\n", __func__);
 
 	if (fse->index >= 3 || fse->code != ar0330->format.code)
 		return -EINVAL;
@@ -1211,6 +1221,8 @@ static int ar0330_get_format(struct v4l2_subdev *subdev,
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
 
+	pr_info("%s() called\n", __func__);
+
 	fmt->format = *__ar0330_get_pad_format(ar0330, sd_state, fmt->pad,
 						fmt->which);
 	return 0;
@@ -1227,6 +1239,8 @@ static int ar0330_set_format(struct v4l2_subdev *subdev,
 	unsigned int height;
 	unsigned int hratio;
 	unsigned int vratio;
+
+	pr_info("%s() called\n", __func__);
 
 	__crop = __ar0330_get_pad_crop(ar0330, sd_state, format->pad,
 					format->which);
@@ -1280,6 +1294,8 @@ static int ar0330_get_selection(struct v4l2_subdev *subdev,
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
 
+	pr_info("%s() called\n", __func__);
+
 	if (sel->target != V4L2_SEL_TGT_CROP)
 		return -EINVAL;
 
@@ -1296,6 +1312,8 @@ static int ar0330_set_selection(struct v4l2_subdev *subdev,
 	struct v4l2_mbus_framefmt *__format;
 	struct v4l2_rect *__crop;
 	struct v4l2_rect rect;
+
+	pr_info("%s() called\n", __func__);
 
 	if (sel->target != V4L2_SEL_TGT_CROP)
 		return -EINVAL;
