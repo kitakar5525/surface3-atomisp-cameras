@@ -1826,11 +1826,6 @@ static int ar0330_remove(struct i2c_client *client)
 	struct ar0330 *ar0330 = to_ar0330(subdev);
 
 	v4l2_ctrl_handler_free(&ar0330->ctrls);
-
-	ar0330->platform_data->csi_cfg(subdev, 0);
-	v4l2_async_unregister_subdev(subdev);
-	atomisp_gmin_remove_subdev(subdev);
-
 	media_entity_cleanup(&subdev->entity);
 
 	/*
@@ -1841,6 +1836,10 @@ static int ar0330_remove(struct i2c_client *client)
 	if (!pm_runtime_status_suspended(ar0330->dev))
 		ar0330_power_off(ar0330);
 	pm_runtime_set_suspended(ar0330->dev);
+
+	ar0330->platform_data->csi_cfg(subdev, 0);
+	v4l2_async_unregister_subdev(subdev);
+	atomisp_gmin_remove_subdev(subdev);
 
 	kfree(ar0330);
 
