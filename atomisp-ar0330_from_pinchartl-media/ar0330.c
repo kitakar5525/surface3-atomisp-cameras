@@ -9,7 +9,6 @@
  * Based on the MT9V032 driver and Bastian Hecht's code.
  */
 
-#include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/device.h>
 #include <linux/gpio/consumer.h>
@@ -137,7 +136,6 @@ struct ar0330 {
 	struct smiapp_pll pll;
 	unsigned int version;
 
-	struct clk *clock;
 	struct gpio_desc *reset;
 	struct regulator_bulk_data supplies[3];
 
@@ -1451,14 +1449,6 @@ static int ar0330_power_on(struct ar0330 *ar0330)
 		return ret;
 	}
 
-	ret = clk_prepare_enable(ar0330->clock);
-	if (ret < 0) {
-		dev_err(ar0330->dev, "Failed to enable clock: %d\n", ret);
-		regulator_bulk_disable(ARRAY_SIZE(ar0330->supplies),
-				       ar0330->supplies);
-		return ret;
-	}
-
 	/* Assert reset for 1ms */
 	if (ar0330->reset) {
 		gpiod_set_value(ar0330->reset, 1);
@@ -1477,7 +1467,6 @@ static int ar0330_power_on_init(struct ar0330 *ar0330)
 
 static void ar0330_power_off(struct ar0330 *ar0330)
 {
-	clk_disable_unprepare(ar0330->clock);
 	regulator_bulk_disable(ARRAY_SIZE(ar0330->supplies), ar0330->supplies);
 }
 
@@ -1576,25 +1565,6 @@ static int ar0330_probe(struct i2c_client *client,
 	ar0330->client = client;
 	ar0330->dev = &client->dev;
 	ar0330->read_mode = 0;
-
-	/* Acquire resources. */
-	ar0330->clock = devm_clk_get(ar0330->dev, NULL);
-	if (IS_ERR(ar0330->clock)) {
-		ret = PTR_ERR(ar0330->clock);
-		if (ret != -EPROBE_DEFER)
-			dev_err(ar0330->dev, "Failed to get clock: %d\n",
-				ret);
-		goto error_free;
-	}
-
-	rate = clk_round_rate(ar0330->clock, rate);
-	ret = clk_set_rate(ar0330->clock, rate);
-	if (ret < 0) {
-		dev_err(ar0330->dev, "Failed to set clock rate: %d\n", ret);
-		goto error_free;
-	}
-
-	dev_dbg(ar0330->dev, "clock rate set to %lu\n", rate);
 
 	ar0330->reset = devm_gpiod_get_optional(ar0330->dev, "reset",
 						GPIOD_OUT_HIGH);
