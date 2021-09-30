@@ -1685,6 +1685,7 @@ static int ar0330_probe(struct i2c_client *client,
 {
 	unsigned long rate = 24000000;
 	struct ar0330 *ar0330;
+	void *pdata;
 	int ret;
 
 	ar0330 = kzalloc(sizeof(*ar0330), GFP_KERNEL);
@@ -1735,6 +1736,20 @@ static int ar0330_probe(struct i2c_client *client,
 	ar0330->subdev.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	ar0330->subdev.entity.function = MEDIA_ENT_F_CAM_SENSOR;
 
+	pdata = gmin_camera_platform_data(&ar0330->subdev,
+					  ATOMISP_INPUT_FORMAT_RAW_10,
+					  atomisp_bayer_order_bggr);
+	if (!pdata)
+		goto error_media;
+
+	ret = ar0330_s_config(&ar0330->subdev, client->irq, pdata);
+	if (ret)
+		goto error_media;
+
+	ret = atomisp_register_i2c_module(&ar0330->subdev, pdata, RAW_CAMERA);
+	if (ret)
+		goto error_media;
+
 	ar0330_init_cfg(&ar0330->subdev, NULL);
 
 	ret = ar0330_pll_init(ar0330, rate);
@@ -1775,9 +1790,8 @@ error_media:
 	media_entity_cleanup(&ar0330->subdev.entity);
 error_ctrl:
 	v4l2_ctrl_handler_free(&ar0330->ctrls);
-error_power:
+
 	ar0330_power_off(ar0330);
-error_free:
 	kfree(ar0330);
 
 	return ret;
