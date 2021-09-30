@@ -1401,6 +1401,12 @@ static const char * const ar0330_test_pattern_menu[] = {
  * V4L2 subdev operations
  */
 
+static int ar0330_s_power(struct v4l2_subdev *sd, int on);
+
+static const struct v4l2_subdev_core_ops ar0330_core_ops = {
+	.s_power = ar0330_s_power,
+};
+
 static const struct v4l2_subdev_video_ops ar0330_subdev_video_ops = {
 	.s_stream       = ar0330_s_stream,
 };
@@ -1416,6 +1422,7 @@ static const struct v4l2_subdev_pad_ops ar0330_subdev_pad_ops = {
 };
 
 static const struct v4l2_subdev_ops ar0330_subdev_ops = {
+	.core	= &ar0330_core_ops,
 	.video  = &ar0330_subdev_video_ops,
 	.pad    = &ar0330_subdev_pad_ops,
 };
@@ -1549,6 +1556,33 @@ static void ar0330_power_off(struct ar0330 *ar0330)
 	ret = power_ctrl(&ar0330->subdev, 0);
 	if (ret)
 		dev_err(&client->dev, "vprog failed.\n");
+}
+
+static int ar0330_s_power(struct v4l2_subdev *sd, int on)
+{
+	struct ar0330 *ar0330 = to_ar0330(sd);
+	int ret = 0;
+
+	mutex_lock(ar0330->ctrls.lock);
+
+	if (on == 0) {
+		ar0330_power_off(ar0330);
+	} else {
+		ret = ar0330_power_on(ar0330);
+		if (ret < 0)
+			goto unlock_and_return;
+
+		ret = ar0330_power_on_init(ar0330);
+		if (ret < 0) {
+			ar0330_power_off(ar0330);
+			goto unlock_and_return;
+		}
+	}
+
+unlock_and_return:
+	mutex_unlock(ar0330->ctrls.lock);
+
+	return ret;
 }
 
 /* -----------------------------------------------------------------------------
