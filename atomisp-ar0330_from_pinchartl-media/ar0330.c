@@ -666,12 +666,13 @@ done:
 
 static struct v4l2_mbus_framefmt *
 __ar0330_get_pad_format(struct ar0330 *ar0330,
-			struct v4l2_subdev_pad_config *cfg,
+			struct v4l2_subdev_state *sd_state,
 			unsigned int pad, u32 which)
 {
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
-		return v4l2_subdev_get_try_format(&ar0330->subdev, cfg, pad);
+		return v4l2_subdev_get_try_format(&ar0330->subdev, sd_state,
+						  pad);
 	case V4L2_SUBDEV_FORMAT_ACTIVE:
 		return &ar0330->format;
 	default:
@@ -680,12 +681,14 @@ __ar0330_get_pad_format(struct ar0330 *ar0330,
 }
 
 static struct v4l2_rect *
-__ar0330_get_pad_crop(struct ar0330 *ar0330, struct v4l2_subdev_pad_config *cfg,
+__ar0330_get_pad_crop(struct ar0330 *ar0330,
+		      struct v4l2_subdev_state *sd_state,
 		      unsigned int pad, u32 which)
 {
 	switch (which) {
 	case V4L2_SUBDEV_FORMAT_TRY:
-		return v4l2_subdev_get_try_crop(&ar0330->subdev, cfg, pad);
+		return v4l2_subdev_get_try_crop(&ar0330->subdev, sd_state,
+						pad);
 	case V4L2_SUBDEV_FORMAT_ACTIVE:
 		return &ar0330->crop;
 	default:
@@ -694,20 +697,20 @@ __ar0330_get_pad_crop(struct ar0330 *ar0330, struct v4l2_subdev_pad_config *cfg,
 }
 
 static int ar0330_init_cfg(struct v4l2_subdev *subdev,
-			   struct v4l2_subdev_pad_config *cfg)
+			   struct v4l2_subdev_state *sd_state)
 {
-	u32 which = cfg ? V4L2_SUBDEV_FORMAT_TRY : V4L2_SUBDEV_FORMAT_ACTIVE;
+	u32 which = sd_state ? V4L2_SUBDEV_FORMAT_TRY : V4L2_SUBDEV_FORMAT_ACTIVE;
 	struct ar0330 *ar0330 = to_ar0330(subdev);
 	struct v4l2_mbus_framefmt *format;
 	struct v4l2_rect *crop;
 
-	crop = __ar0330_get_pad_crop(ar0330, cfg, 0, which);
+	crop = __ar0330_get_pad_crop(ar0330, sd_state, 0, which);
 	crop->left = (AR0330_WINDOW_WIDTH_MAX - AR0330_WINDOW_WIDTH_DEF) / 2;
 	crop->top = (AR0330_WINDOW_HEIGHT_MAX - AR0330_WINDOW_HEIGHT_DEF) / 2;
 	crop->width = AR0330_WINDOW_WIDTH_DEF;
 	crop->height = AR0330_WINDOW_HEIGHT_DEF;
 
-	format = __ar0330_get_pad_format(ar0330, cfg, 0, which);
+	format = __ar0330_get_pad_format(ar0330, sd_state, 0, which);
 	format->code = MEDIA_BUS_FMT_SGRBG12_1X12;
 	format->width = AR0330_WINDOW_WIDTH_DEF;
 	format->height = AR0330_WINDOW_HEIGHT_DEF;
@@ -718,7 +721,7 @@ static int ar0330_init_cfg(struct v4l2_subdev *subdev,
 }
 
 static int ar0330_enum_mbus_code(struct v4l2_subdev *subdev,
-				 struct v4l2_subdev_pad_config *cfg,
+				 struct v4l2_subdev_state *sd_state,
 				 struct v4l2_subdev_mbus_code_enum *code)
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
@@ -731,7 +734,7 @@ static int ar0330_enum_mbus_code(struct v4l2_subdev *subdev,
 }
 
 static int ar0330_enum_frame_size(struct v4l2_subdev *subdev,
-				  struct v4l2_subdev_pad_config *cfg,
+				  struct v4l2_subdev_state *sd_state,
 				  struct v4l2_subdev_frame_size_enum *fse)
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
@@ -748,18 +751,18 @@ static int ar0330_enum_frame_size(struct v4l2_subdev *subdev,
 }
 
 static int ar0330_get_format(struct v4l2_subdev *subdev,
-			     struct v4l2_subdev_pad_config *cfg,
+			     struct v4l2_subdev_state *sd_state,
 			     struct v4l2_subdev_format *fmt)
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
 
-	fmt->format = *__ar0330_get_pad_format(ar0330, cfg, fmt->pad,
+	fmt->format = *__ar0330_get_pad_format(ar0330, sd_state, fmt->pad,
 						fmt->which);
 	return 0;
 }
 
 static int ar0330_set_format(struct v4l2_subdev *subdev,
-			     struct v4l2_subdev_pad_config *cfg,
+			     struct v4l2_subdev_state *sd_state,
 			     struct v4l2_subdev_format *format)
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
@@ -770,7 +773,7 @@ static int ar0330_set_format(struct v4l2_subdev *subdev,
 	unsigned int hratio;
 	unsigned int vratio;
 
-	__crop = __ar0330_get_pad_crop(ar0330, cfg, format->pad,
+	__crop = __ar0330_get_pad_crop(ar0330, sd_state, format->pad,
 					format->which);
 
 	/* Clamp the width and height to avoid dividing by zero. */
@@ -784,7 +787,7 @@ static int ar0330_set_format(struct v4l2_subdev *subdev,
 	hratio = DIV_ROUND_CLOSEST(__crop->width, width);
 	vratio = DIV_ROUND_CLOSEST(__crop->height, height);
 
-	__format = __ar0330_get_pad_format(ar0330, cfg, format->pad,
+	__format = __ar0330_get_pad_format(ar0330, sd_state, format->pad,
 					    format->which);
 	__format->width = __crop->width / hratio;
 	__format->height = __crop->height / vratio;
@@ -795,7 +798,7 @@ static int ar0330_set_format(struct v4l2_subdev *subdev,
 }
 
 static int ar0330_get_selection(struct v4l2_subdev *subdev,
-				struct v4l2_subdev_pad_config *cfg,
+				struct v4l2_subdev_state *sd_state,
 				struct v4l2_subdev_selection *sel)
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
@@ -803,12 +806,13 @@ static int ar0330_get_selection(struct v4l2_subdev *subdev,
 	if (sel->target != V4L2_SEL_TGT_CROP)
 		return -EINVAL;
 
-	sel->r = *__ar0330_get_pad_crop(ar0330, cfg, sel->pad, sel->which);
+	sel->r = *__ar0330_get_pad_crop(ar0330, sd_state, sel->pad,
+					sel->which);
 	return 0;
 }
 
 static int ar0330_set_selection(struct v4l2_subdev *subdev,
-				struct v4l2_subdev_pad_config *cfg,
+				struct v4l2_subdev_state *sd_state,
 				struct v4l2_subdev_selection *sel)
 {
 	struct ar0330 *ar0330 = to_ar0330(subdev);
@@ -837,14 +841,14 @@ static int ar0330_set_selection(struct v4l2_subdev *subdev,
 	rect.width = min(rect.width, AR0330_WINDOW_WIDTH_MAX - rect.left);
 	rect.height = min(rect.height, AR0330_WINDOW_HEIGHT_MAX - rect.top);
 
-	__crop = __ar0330_get_pad_crop(ar0330, cfg, sel->pad, sel->which);
+	__crop = __ar0330_get_pad_crop(ar0330, sd_state, sel->pad, sel->which);
 
 	if (rect.width != __crop->width || rect.height != __crop->height) {
 		/*
 		 * Reset the output image size if the crop rectangle size has
 		 * been modified.
 		 */
-		__format = __ar0330_get_pad_format(ar0330, cfg, sel->pad,
+		__format = __ar0330_get_pad_format(ar0330, sd_state, sel->pad,
 						    sel->which);
 		__format->width = rect.width;
 		__format->height = rect.height;
