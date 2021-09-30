@@ -1782,7 +1782,6 @@ error_gmin:
 error_ctrl:
 	v4l2_ctrl_handler_free(&ar0330->ctrls);
 
-	ar0330_power_off(ar0330);
 	kfree(ar0330);
 
 	return ret;
