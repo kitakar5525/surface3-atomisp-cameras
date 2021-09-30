@@ -1437,6 +1437,31 @@ static const struct v4l2_subdev_ops ar0330_subdev_ops = {
  * Power management
  */
 
+static int power_ctrl(struct v4l2_subdev *sd, bool flag)
+{
+	int ret = 0;
+	struct ar0330 *dev = to_ar0330(sd);
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+
+	if (!dev || !dev->platform_data)
+		return -ENODEV;
+
+	dev_dbg(&client->dev, "%s: %s", __func__, flag ? "on" : "off");
+
+	if (flag) {
+		ret |= dev->platform_data->v1p8_ctrl(sd, 1);
+		ret |= dev->platform_data->v2p8_ctrl(sd, 1);
+		usleep_range(10000, 15000);
+	}
+
+	if (!flag || ret) {
+		ret |= dev->platform_data->v1p8_ctrl(sd, 0);
+		ret |= dev->platform_data->v2p8_ctrl(sd, 0);
+	}
+
+	return ret;
+}
+
 static int gpio_ctrl(struct v4l2_subdev *sd, bool flag)
 {
 	int ret;
@@ -1467,17 +1492,31 @@ static int ar0330_power_on(struct ar0330 *ar0330)
 	/* TODO: turning gpio off here, really needed? */
 	ret = gpio_ctrl(&ar0330->subdev, 0);
 	if (ret)
-		return ret;
+		goto fail_power;
+
+	/* power control */
+	ret = power_ctrl(&ar0330->subdev, 1);
+	if (ret)
+		goto fail_power;
+
+	/* adding some delay */
+	usleep_range(50000, 100000);
 
 	/* gpio ctrl */
 	ret = gpio_ctrl(&ar0330->subdev, 1);
 	if (ret) {
 		ret = gpio_ctrl(&ar0330->subdev, 1);
 		if (ret)
-			return ret;
+			goto fail_power;
 	}
 
 	return 0;
+
+fail_power:
+	power_ctrl(&ar0330->subdev, 0);
+	dev_err(ar0330->dev, "sensor power-up failed\n");
+
+	return ret;
 }
 
 static int ar0330_power_on_init(struct ar0330 *ar0330)
@@ -1497,6 +1536,11 @@ static void ar0330_power_off(struct ar0330 *ar0330)
 		if (ret)
 			dev_err(&client->dev, "gpio failed 2\n");
 	}
+
+	/* power control */
+	ret = power_ctrl(&ar0330->subdev, 0);
+	if (ret)
+		dev_err(&client->dev, "vprog failed.\n");
 }
 
 static int ar0330_runtime_resume(struct device *dev)
