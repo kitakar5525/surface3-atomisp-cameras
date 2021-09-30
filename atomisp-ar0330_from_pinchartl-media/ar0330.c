@@ -1527,7 +1527,13 @@ fail_power:
 
 static int ar0330_power_on_init(struct ar0330 *ar0330)
 {
-	return ar0330_otpm_patch(ar0330);
+	int ret;
+
+	ret = ar0330_otpm_patch(ar0330);
+	if (ret)
+		dev_err(ar0330->dev, "ar0330_otpm_patch failed\n");
+
+	return ret;
 }
 
 static void ar0330_power_off(struct ar0330 *ar0330)
