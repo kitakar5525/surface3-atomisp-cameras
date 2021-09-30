@@ -1752,16 +1752,9 @@ static const struct i2c_device_id ar0330_id[] = {
 };
 MODULE_DEVICE_TABLE(i2c, ar0330_id);
 
-static const struct of_device_id ar0330_of_id[] = {
-	{ .compatible = "onnn,ar0330" },
-	{ }
-};
-MODULE_DEVICE_TABLE(of, ar0330_of_id);
-
 static struct i2c_driver ar0330_i2c_driver = {
 	.driver = {
 		.name = "ar0330",
-		.of_match_table = ar0330_of_id,
 		.pm = &ar0330_pm_ops,
 	},
 	.probe          = ar0330_probe,
