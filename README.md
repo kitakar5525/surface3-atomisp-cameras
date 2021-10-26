@@ -10,7 +10,8 @@ working.
 Patches for atomisp (also contain sensor drivers):
 - https://github.com/kitakar5525/linux-kernel/commits/mainline+upst_atomisp
 
-Patches for kernel core (like regulators):
+Patches for kernel core (like regulators) (also contains patches unrelated
+to atomisp, maybe I need to create dedicated branch for atomisp later):
 - https://github.com/kitakar5525/linux-kernel/commits/DEBUG/mainline+surface+k5
 
 #### to build sensor drivers
