@@ -2,15 +2,21 @@
 
 Link to issue: https://github.com/linux-surface/linux-surface/issues/209
 
-References:
-- https://github.com/jhand2/surface-camera
-  [I referenced GPIO part.]
+#### atomisp pci driver
 
-#### patches dir
+Take a look at my kernel repo. The upstreamed atomisp is currently not
+working.
 
-You need to apply those patches first for atomisp to work on Surface 3.
+Patches for atomisp (also contain sensor drivers):
+- https://github.com/kitakar5525/linux-kernel/commits/mainline+upst_atomisp
 
-#### to build
+Patches for kernel core (like regulators):
+- https://github.com/kitakar5525/linux-kernel/commits/DEBUG/mainline+surface+k5
+
+#### to build sensor drivers
+
+Sensor drivers are already included in my kernel tree mentioned above,
+but if you want to build drivers here:
 
 ```bash
 make KDIR="/path/to/your/kernel_tree" ATOMISP_INC="drivers/staging/media/atomisp/include"
@@ -19,17 +25,19 @@ make KDIR="/path/to/your/kernel_tree" ATOMISP_INC="drivers/staging/media/atomisp
 #### atomisp firmware file
 
 You need a firmware file, place it to `/lib/firmware/shisp_2401a0_v21.bin`
-You can find one from some places:
-- firmware update file for Surface 3 as filename `isp_firmware.bin`, version `irci_stable_bw10p_0518_20150801_0537` (from Microsoft, used on Windows)
-- intel-aero/meta-intel-aero-base repo, version `irci_stable_candrpv_0415_20150521_0458` (see "links" section below)
+The firmware version should be `irci_stable_candrpv_0415_20150521_0458`.
+You can download it from intel-aero (https://github.com/intel-aero/meta-intel-aero-base/tree/master/recipes-kernel/linux/linux-yocto)
 
-Current atomisp driver warns with the following message about firmware version mismatch:
+Just in case, the version and hash of firmware which I downloaded from
+intel-aero is the following:
+
 ```bash
-atomisp-isp2 0000:00:03.0: Firmware version may not be compatible with this driver
-atomisp-isp2 0000:00:03.0: Expecting version 'irci_ecr - master_20150911_0724', but firmware is 'irci_stable_candrpv_0415_20150521_0458'.
-```
+$ strings /lib/firmware/shisp_2401a0_v21.bin | grep 2015
+irci_stable_candrpv_0415_20150521_0458
 
-Take a look at commit [torvalds/linux@33c24f8f](https://github.com/torvalds/linux/commit/33c24f8f5a2716824bb0af959d7eb87c94133cfc).
+$ sha256sum /lib/firmware/shisp_2401a0_v21.bin
+e89359f4e4934c410c83d525e283f34c5fcce9cb5caa75ad8a32d66d3842d95c  /lib/firmware/shisp_2401a0_v21.bin
+```
 
 #### links
 
