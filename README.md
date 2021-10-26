@@ -40,6 +40,8 @@ $ sha256sum /lib/firmware/shisp_2401a0_v21.bin
 e89359f4e4934c410c83d525e283f34c5fcce9cb5caa75ad8a32d66d3842d95c  /lib/firmware/shisp_2401a0_v21.bin
 ```
 
+Note that the other version of firmware may not work.
+
 #### links
 
 You can find atomisp and its sensor drivers for Android (kernel 3.10) on some places:
