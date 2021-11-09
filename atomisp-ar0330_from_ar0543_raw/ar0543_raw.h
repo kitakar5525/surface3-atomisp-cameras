@@ -21,7 +21,7 @@
 
 #ifndef __AR0543_RAW_H__
 #define __AR0543_RAW_H__
-#include <linux/atomisp_platform.h>
+#include <linux/atomisp_gmin_platform.h>
 #include <linux/atomisp.h>
 #include <linux/delay.h>
 #include <linux/i2c.h>
