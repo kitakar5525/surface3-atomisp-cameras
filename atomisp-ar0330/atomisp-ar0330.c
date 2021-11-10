@@ -742,12 +742,76 @@ static int ar0330_enum_frame_interval(struct v4l2_subdev *sd,
 	return 0;
 }
 
+static int ar0330_set_gain(struct ar0330 *ar0330, int gain);
+
+static long ar0330_set_exposure(struct v4l2_subdev *sd, u16 coarse_itg,
+				u16 fine_itg, u16 a_gain, u16 d_gain)
+
+{
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+	struct ar0330 *ar0330 = to_ar0330(sd);
+	int ret;
+
+	mutex_lock(&ar0330->mutex);
+
+	/* TODO: using coarse_itg appropriate? */
+	ret = ar0330_write(ar0330->client,
+			   AR0330_REG_EXPOSURE, coarse_itg);
+	if (ret) {
+		dev_err(&client->dev,
+			"setting AR0330_REG_EXPOSURE failed\n");
+	}
+
+	ret = ar0330_set_gain(ar0330, a_gain);
+	if (ret)
+		dev_err(&client->dev, "ar0330_set_gain() failed\n");
+
+	mutex_unlock(&ar0330->mutex);
+
+	return ret;
+}
+
+static long ar0330_s_exposure(struct v4l2_subdev *sd,
+			      struct atomisp_exposure *exposure)
+{
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+	u16 coarse_itg, fine_itg, analog_gain, digital_gain;
+
+	coarse_itg = exposure->integration_time[0];
+	fine_itg = exposure->integration_time[1];
+	analog_gain = exposure->gain[0];
+	digital_gain = exposure->gain[1];
+
+	/* we should not accept the invalid value below */
+	if (fine_itg == 0 || analog_gain == 0) {
+		v4l2_err(client, "%s(): invalid value\n", __func__);
+		return -EINVAL;
+	}
+
+	dev_dbg(&client->dev, "%s() analog %x digital %x\n",
+		__func__, analog_gain, digital_gain);
+	return ar0330_set_exposure(sd, coarse_itg, fine_itg, analog_gain,
+				   digital_gain);
+}
+
+static long ar0330_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
+{
+	switch (cmd) {
+	case ATOMISP_IOC_S_EXPOSURE:
+		return ar0330_s_exposure(sd, (struct atomisp_exposure *)arg);
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
 static const struct v4l2_subdev_internal_ops ar0330_internal_ops = {
 	.open = ar0330_open,
 };
 
 static const struct v4l2_subdev_core_ops ar0330_core_ops = {
 	.s_power = ar0330_s_power,
+	.ioctl = ar0330_ioctl,
 };
 
 static const struct v4l2_subdev_video_ops ar0330_video_ops = {
