@@ -1440,6 +1440,69 @@ static const char * const ar0330_test_pattern_menu[] = {
 	"Walking 1s",
 };
 
+static long ar0330_set_exposure(struct v4l2_subdev *sd, u16 coarse_itg,
+				u16 fine_itg, u16 a_gain, u16 d_gain)
+
+{
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+	struct ar0330 *ar0330 = to_ar0330(sd);
+	int ret;
+
+	mutex_lock(ar0330->ctrls.lock);
+
+	ret = ar0330_write16(ar0330, AR0330_COARSE_INTEGRATION_TIME,
+			     coarse_itg, NULL);
+	if (ret) {
+		dev_err(&client->dev,
+			"setting AR0330_COARSE_INTEGRATION_TIME failed\n");
+	}
+
+	/* TODO: analog_gain vs digital_gain ? */
+	ret = ar0330_write16(ar0330, AR0330_GLOBAL_GAIN, a_gain, NULL);
+	if (ret) {
+		dev_err(&client->dev,
+			"setting AR0330_GLOBAL_GAIN failed\n");
+	}
+
+	mutex_unlock(ar0330->ctrls.lock);
+
+	return ret;
+}
+
+static long ar0330_s_exposure(struct v4l2_subdev *sd,
+			      struct atomisp_exposure *exposure)
+{
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+	u16 coarse_itg, fine_itg, analog_gain, digital_gain;
+
+	coarse_itg = exposure->integration_time[0];
+	fine_itg = exposure->integration_time[1];
+	analog_gain = exposure->gain[0];
+	digital_gain = exposure->gain[1];
+
+	/* we should not accept the invalid value below */
+	if (fine_itg == 0 || analog_gain == 0) {
+		v4l2_err(client, "%s(): invalid value\n", __func__);
+		return -EINVAL;
+	}
+
+	dev_dbg(&client->dev, "%s() analog %x digital %x\n",
+		__func__, analog_gain, digital_gain);
+	return ar0330_set_exposure(sd, coarse_itg, fine_itg, analog_gain,
+				   digital_gain);
+}
+
+static long ar0330_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
+{
+	switch (cmd) {
+	case ATOMISP_IOC_S_EXPOSURE:
+		return ar0330_s_exposure(sd, (struct atomisp_exposure *)arg);
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
 /* -----------------------------------------------------------------------------
  * V4L2 subdev operations
  */
@@ -1448,6 +1511,7 @@ static int ar0330_s_power(struct v4l2_subdev *sd, int on);
 
 static const struct v4l2_subdev_core_ops ar0330_core_ops = {
 	.s_power = ar0330_s_power,
+	.ioctl = ar0330_ioctl,
 };
 
 static const struct v4l2_subdev_video_ops ar0330_subdev_video_ops = {
