@@ -691,7 +691,9 @@ static int ar0330_s_power(struct v4l2_subdev *sd, int on)
 		ret = power_down(ar0330);
 	} else {
 		ret = power_up(ar0330);
-		if (!ret)
+		if (ret)
+			goto unlock_and_return;
+
 		ret = ar0330_write_array(ar0330->client, ar0330_global_regs);
 		if (ret) {
 			v4l2_err(sd, "could not set init registers\n");
