@@ -29,6 +29,8 @@
 #include <linux/kernel.h>
 #include <linux/seq_file.h>
 
+#include "../include/linux/atomisp_gmin_platform.h"
+
 struct ar0330_reg {
 	u16 addr;
 	u16 val;
