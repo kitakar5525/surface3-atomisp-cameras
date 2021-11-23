@@ -35,8 +35,6 @@
 #include <linux/of_device.h>
 #include <linux/of_gpio.h>
 
-#include "nvc_utilities.h"
-
 struct ar0330_reg {
 	u16 addr;
 	u16 val;

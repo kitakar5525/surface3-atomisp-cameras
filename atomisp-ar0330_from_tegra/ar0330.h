@@ -18,8 +18,6 @@
 #define __AR0330_H__
 
 #include <linux/ioctl.h>  /* For IOCTL macros */
-#include <media/nvc.h>
-#include <media/nvc_image.h>
 
 #define AR0330_IOCTL_SET_MODE		_IOW('o', 1, struct ar0330_mode)
 #define AR0330_IOCTL_GET_STATUS		_IOR('o', 2, __u8)
