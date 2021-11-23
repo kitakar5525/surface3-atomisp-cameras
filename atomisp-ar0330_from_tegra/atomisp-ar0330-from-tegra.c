@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <linux/acpi.h>
 #include <linux/delay.h>
 #include <linux/fs.h>
 #include <linux/i2c.h>
@@ -774,10 +775,17 @@ static const struct i2c_device_id ar0330_id[] = {
 
 MODULE_DEVICE_TABLE(i2c, ar0330_id);
 
+static const struct acpi_device_id ar0330_acpi_ids[] = {
+	{"APTA0330"},
+	{},
+};
+MODULE_DEVICE_TABLE(acpi, ar0330_acpi_ids);
+
 static struct i2c_driver ar0330_i2c_driver = {
 	.driver = {
 		.name = "ar0330",
 		.owner = THIS_MODULE,
+		.acpi_match_table = ACPI_PTR(ar0330_acpi_ids),
 	},
 	.probe = ar0330_probe,
 	.remove = ar0330_remove,
