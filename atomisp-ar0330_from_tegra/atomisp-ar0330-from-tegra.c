@@ -19,21 +19,15 @@
 #include <linux/delay.h>
 #include <linux/fs.h>
 #include <linux/i2c.h>
-#include <linux/clk.h>
 #include <linux/miscdevice.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
-#include <linux/regulator/consumer.h>
 #include <linux/regmap.h>
 #include "ar0330.h"
-#include <linux/gpio.h>
 #include <linux/module.h>
 
 #include <linux/kernel.h>
 #include <linux/seq_file.h>
-#include <linux/of.h>
-#include <linux/of_device.h>
-#include <linux/of_gpio.h>
 
 struct ar0330_reg {
 	u16 addr;
@@ -46,8 +40,6 @@ struct ar0330_info {
 	struct ar0330_power_rail	power;
 	struct ar0330_sensordata	sensor_data;
 	struct i2c_client		*i2c_client;
-	struct ar0330_platform_data	*pdata;
-	struct clk			*mclk;
 	struct regmap			*regmap;
 	struct mutex			ar0330_camera_lock;
 	atomic_t			in_use;
@@ -548,26 +540,6 @@ static int ar0330_get_sensor_id(struct ar0330_info *info)
 	return ret;
 }
 
-static void ar0330_mclk_disable(struct ar0330_info *info)
-{
-	dev_dbg(&info->i2c_client->dev, "%s: disable MCLK\n", __func__);
-	clk_disable_unprepare(info->mclk);
-}
-
-static int ar0330_mclk_enable(struct ar0330_info *info)
-{
-	int err;
-	unsigned long mclk_init_rate = 24000000;
-
-	dev_dbg(&info->i2c_client->dev, "%s: enable MCLK with %lu Hz\n",
-		__func__, mclk_init_rate);
-
-	err = clk_set_rate(info->mclk, mclk_init_rate);
-	if (!err)
-		err = clk_prepare_enable(info->mclk);
-	return err;
-}
-
 static long
 ar0330_ioctl(struct file *file,
 			 unsigned int cmd, unsigned long arg)
@@ -576,21 +548,6 @@ ar0330_ioctl(struct file *file,
 	struct ar0330_info *info = file->private_data;
 
 	switch (cmd) {
-	case AR0330_IOCTL_SET_POWER:
-		if (!info->pdata)
-			break;
-		if (arg && info->pdata->power_on) {
-			err = ar0330_mclk_enable(info);
-			if (!err)
-				err = info->pdata->power_on(&info->power);
-			if (err < 0)
-				ar0330_mclk_disable(info);
-		}
-		if (!arg && info->pdata->power_off) {
-			info->pdata->power_off(&info->power);
-			ar0330_mclk_disable(info);
-		}
-		break;
 	case AR0330_IOCTL_SET_MODE:
 	{
 		struct ar0330_mode mode;
@@ -674,61 +631,11 @@ ar0330_ioctl(struct file *file,
 
 static int ar0330_power_on(struct ar0330_power_rail *pw)
 {
-	int err;
-	struct ar0330_info *info = container_of(pw, struct ar0330_info, power);
-
-	if (unlikely(WARN_ON(!pw || !pw->iovdd || !pw->avdd || !pw->dvdd)))
-		return -EFAULT;
-
-	gpio_set_value(info->pdata->cam2_gpio, 0);
-	usleep_range(10, 20);
-
-	err = regulator_enable(pw->avdd);
-	if (err)
-		goto ar0330_avdd_fail;
-
-	err = regulator_enable(pw->dvdd);
-	if (err)
-		goto ar0330_dvdd_fail;
-
-	err = regulator_enable(pw->iovdd);
-	if (err)
-		goto ar0330_iovdd_fail;
-
-	usleep_range(1, 2);
-	gpio_set_value(info->pdata->cam2_gpio, 1);
-
-	usleep_range(300, 310);
-
-	return 1;
-
-
-ar0330_iovdd_fail:
-	regulator_disable(pw->dvdd);
-
-ar0330_dvdd_fail:
-	regulator_disable(pw->avdd);
-
-ar0330_avdd_fail:
-	pr_err("%s failed.\n", __func__);
-	return -ENODEV;
+	return 0;
 }
 
 static int ar0330_power_off(struct ar0330_power_rail *pw)
 {
-	struct ar0330_info *info = container_of(pw, struct ar0330_info, power);
-
-	if (unlikely(WARN_ON(!pw || !pw->iovdd || !pw->avdd || !pw->dvdd)))
-		return -EFAULT;
-
-	usleep_range(1, 2);
-	gpio_set_value(info->pdata->cam2_gpio, 0);
-	usleep_range(1, 2);
-
-	regulator_disable(pw->iovdd);
-	regulator_disable(pw->dvdd);
-	regulator_disable(pw->avdd);
-
 	return 0;
 }
 
@@ -764,55 +671,12 @@ ar0330_release(struct inode *inode, struct file *file)
 
 static int ar0330_power_put(struct ar0330_power_rail *pw)
 {
-	if (unlikely(!pw))
-		return -EFAULT;
-
-	if (likely(pw->avdd))
-		regulator_put(pw->avdd);
-
-	if (likely(pw->iovdd))
-		regulator_put(pw->iovdd);
-
-	if (likely(pw->dvdd))
-		regulator_put(pw->dvdd);
-
-	pw->avdd = NULL;
-	pw->iovdd = NULL;
-	pw->dvdd = NULL;
-
 	return 0;
-}
-
-static int ar0330_regulator_get(struct ar0330_info *info,
-	struct regulator **vreg, char vreg_name[])
-{
-	struct regulator *reg = NULL;
-	int err = 0;
-
-	reg = regulator_get(&info->i2c_client->dev, vreg_name);
-	if (unlikely(IS_ERR(reg))) {
-		dev_err(&info->i2c_client->dev, "%s %s ERR: %d\n",
-			__func__, vreg_name, (int)reg);
-		err = PTR_ERR(reg);
-		reg = NULL;
-	} else
-		dev_dbg(&info->i2c_client->dev, "%s: %s\n",
-			__func__, vreg_name);
-
-	*vreg = reg;
-	return err;
 }
 
 static int ar0330_power_get(struct ar0330_info *info)
 {
-	struct ar0330_power_rail *pw = &info->power;
-	int err = 0;
-
-	err |= ar0330_regulator_get(info, &pw->avdd, "vana"); /* ananlog 2.7v */
-	err |= ar0330_regulator_get(info, &pw->dvdd, "vdig"); /* digital 1.2v */
-	err |= ar0330_regulator_get(info, &pw->iovdd, "vif"); /* IO 1.8v */
-
-	return err;
+	return 0;
 }
 
 static const struct file_operations ar0330_fileops = {
@@ -828,48 +692,12 @@ static struct miscdevice ar0330_device = {
 	.fops = &ar0330_fileops,
 };
 
-static struct of_device_id ar0330_of_match[] = {
-	{ .compatible = "nvidia,ar0330", },
-	{ },
-};
-
-MODULE_DEVICE_TABLE(of, ar0330_of_match);
-
-static struct ar0330_platform_data *ar0330_parse_dt(struct i2c_client *client)
-{
-	struct device_node *np = client->dev.of_node;
-	struct ar0330_platform_data *board_info_pdata;
-	const struct of_device_id *match;
-
-	match = of_match_device(ar0330_of_match, &client->dev);
-	if (!match) {
-		dev_err(&client->dev, "Failed to find matching dt id\n");
-		return NULL;
-	}
-
-	board_info_pdata = devm_kzalloc(&client->dev, sizeof(*board_info_pdata),
-			GFP_KERNEL);
-	if (!board_info_pdata) {
-		dev_err(&client->dev, "Failed to allocate pdata\n");
-		return NULL;
-	}
-
-	board_info_pdata->cam2_gpio = of_get_named_gpio(np, "cam1-gpios", 0);
-	board_info_pdata->ext_reg = of_property_read_bool(np, "nvidia,ext_reg");
-
-	board_info_pdata->power_on = ar0330_power_on;
-	board_info_pdata->power_off = ar0330_power_off;
-
-	return board_info_pdata;
-}
-
 static int
 ar0330_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	struct ar0330_info *info;
 	int err;
-	const char *mclk_name;
 
 	pr_err("[AR0330]: probing sensor.\n");
 
@@ -887,28 +715,9 @@ ar0330_probe(struct i2c_client *client,
 		return -ENODEV;
 	}
 
-	if (client->dev.of_node)
-		info->pdata = ar0330_parse_dt(client);
-	else
-		info->pdata = client->dev.platform_data;
-
-	if (!info->pdata) {
-		pr_err("[AR0330]:%s:Unable to get platform data\n", __func__);
-		return -EFAULT;
-	}
-
 	info->i2c_client = client;
 	atomic_set(&info->in_use, 0);
 	info->mode = -1;
-
-	mclk_name = info->pdata->mclk_name ?
-		    info->pdata->mclk_name : "default_mclk";
-	info->mclk = devm_clk_get(&client->dev, mclk_name);
-	if (IS_ERR(info->mclk)) {
-		dev_err(&client->dev, "%s: unable to get clock %s\n",
-			__func__, mclk_name);
-		return PTR_ERR(info->mclk);
-	}
 
 	if (info->pdata->dev_name != NULL)
 		strncpy(info->devname, info->pdata->dev_name,

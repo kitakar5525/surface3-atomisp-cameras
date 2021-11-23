@@ -26,7 +26,6 @@
 #define AR0330_IOCTL_SET_GAIN		_IOW('o', 5, __u16)
 #define AR0330_IOCTL_GET_SENSORDATA	_IOR('o', 6, struct ar0330_sensordata)
 #define AR0330_IOCTL_SET_GROUP_HOLD	_IOW('o', 7, struct ar0330_ae)
-#define AR0330_IOCTL_SET_POWER		_IOW('o', 20, __u32)
 #define AR0330_IOCTL_GET_FLASH_CAP	_IOR('o', 30, __u32)
 #define AR0330_IOCTL_SET_FLASH_MODE	_IOW('o', 31, \
 						struct ar0330_flash_control)
@@ -60,24 +59,5 @@ struct ar0330_flash_control {
 	u8 repeat;
 	u16 delay_frm;
 };
-
-
-#ifdef __KERNEL__
-struct ar0330_power_rail {
-	struct regulator *dvdd;
-	struct regulator *avdd;
-	struct regulator *iovdd;
-};
-
-struct ar0330_platform_data {
-	struct ar0330_flash_control flash_cap;
-	const char *mclk_name; /* NULL for default default_mclk */
-	const char *dev_name; /* NULL for default default_mclk */
-	unsigned int cam2_gpio;
-	bool ext_reg;
-	int (*power_on)(struct ar0330_power_rail *pw);
-	int (*power_off)(struct ar0330_power_rail *pw);
-};
-#endif /* __KERNEL__ */
 
 #endif  /* __AR0330_H__ */
