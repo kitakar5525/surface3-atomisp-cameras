@@ -25,7 +25,7 @@
 #include <linux/uaccess.h>
 #include <linux/regulator/consumer.h>
 #include <linux/regmap.h>
-#include <media/ar0330.h>
+#include "ar0330.h"
 #include <linux/gpio.h>
 #include <linux/module.h>
 
