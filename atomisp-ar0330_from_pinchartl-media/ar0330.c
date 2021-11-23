@@ -1621,6 +1621,9 @@ static int ar0330_power_on(struct ar0330 *ar0330)
 	if (ret)
 		goto fail_clk;
 
+	/* adding some delay */
+	usleep_range(50000, 100000);
+
 	return 0;
 
 fail_clk:
