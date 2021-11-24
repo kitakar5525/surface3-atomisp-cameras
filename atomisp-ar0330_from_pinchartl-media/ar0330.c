@@ -1244,6 +1244,7 @@ static int ar0330_set_format(struct v4l2_subdev *subdev,
 
 	pr_info("%s() called\n", __func__);
 
+	ar0330_init_cfg(subdev, sd_state);
 	__crop = __ar0330_get_pad_crop(ar0330, sd_state, format->pad,
 					format->which);
 	__crop->width = AR0330_WINDOW_WIDTH_DEF;
