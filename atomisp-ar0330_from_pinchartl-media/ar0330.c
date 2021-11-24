@@ -1247,8 +1247,6 @@ static int ar0330_set_format(struct v4l2_subdev *subdev,
 	ar0330_init_cfg(subdev, sd_state);
 	__crop = __ar0330_get_pad_crop(ar0330, sd_state, format->pad,
 					format->which);
-	__crop->width = AR0330_WINDOW_WIDTH_DEF;
-	__crop->height = AR0330_WINDOW_HEIGHT_DEF;
 
 	/* Clamp the width and height to avoid dividing by zero. */
 	width = clamp_t(unsigned int, ALIGN(format->format.width, 2),
