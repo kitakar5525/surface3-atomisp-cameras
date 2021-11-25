@@ -1174,7 +1174,7 @@ static int ar0330_init_cfg(struct v4l2_subdev *subdev,
 	crop->height = AR0330_WINDOW_HEIGHT_DEF;
 
 	format = __ar0330_get_pad_format(ar0330, sd_state, 0, which);
-	format->code = MEDIA_BUS_FMT_SGRBG10_1X10;
+	format->code = MEDIA_BUS_FMT_SGRBG12_1X12;
 	format->width = AR0330_WINDOW_WIDTH_DEF;
 	format->height = AR0330_WINDOW_HEIGHT_DEF;
 	format->field = V4L2_FIELD_NONE;
