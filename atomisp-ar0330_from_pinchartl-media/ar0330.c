@@ -1861,7 +1861,7 @@ static int ar0330_probe(struct i2c_client *client,
 	ar0330->subdev.entity.function = MEDIA_ENT_F_CAM_SENSOR;
 
 	pdata = gmin_camera_platform_data(&ar0330->subdev,
-					  ATOMISP_INPUT_FORMAT_RAW_10,
+					  ATOMISP_INPUT_FORMAT_RAW_12,
 					  atomisp_bayer_order_grbg);
 	if (!pdata) {
 		ret = -EINVAL;
