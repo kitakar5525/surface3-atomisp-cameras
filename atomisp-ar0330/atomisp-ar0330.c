@@ -1090,7 +1090,7 @@ static int ar0330_probe(struct i2c_client *client,
 
 	ret = ar0330_initialize_controls(ar0330);
 	if (ret)
-		goto err_destroy_mutex;
+		goto out_free;
 
 	sd->internal_ops = &ar0330_internal_ops;
 	sd->flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
@@ -1098,17 +1098,15 @@ static int ar0330_probe(struct i2c_client *client,
 	sd->entity.function = MEDIA_ENT_F_CAM_SENSOR;
 	ret = media_entity_pads_init(&sd->entity, 1, &ar0330->pad);
 	if (ret < 0)
-		goto err_power_off;
+		goto err_free_handler;
 
 	return 0;
 
-err_power_off:
-	power_down(ar0330);
+err_free_handler:
 	v4l2_ctrl_handler_free(&ar0330->ctrl_handler);
 out_free:
 	v4l2_device_unregister_subdev(sd);
 	atomisp_gmin_remove_subdev(sd);
-err_destroy_mutex:
 	mutex_destroy(&ar0330->mutex);
 
 	return ret;
