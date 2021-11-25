@@ -1073,7 +1073,7 @@ static int ar0330_probe(struct i2c_client *client,
 	v4l2_i2c_subdev_init(sd, client, &ar0330_subdev_ops);
 
 	pdata = gmin_camera_platform_data(sd,
-					  ATOMISP_INPUT_FORMAT_RAW_10,
+					  ATOMISP_INPUT_FORMAT_RAW_12,
 					  atomisp_bayer_order_grbg);
 	if (!pdata) {
 		ret = -EINVAL;
