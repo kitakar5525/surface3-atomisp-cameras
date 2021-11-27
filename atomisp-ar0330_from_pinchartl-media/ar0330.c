@@ -1709,6 +1709,7 @@ unlock_and_return:
 static int ar0330_identify(struct ar0330 *ar0330)
 {
 	s32 revision;
+	s32 otpm_0x30f0;
 	s32 data;
 
 	/* Read out the chip version register */
@@ -1725,10 +1726,17 @@ static int ar0330_identify(struct ar0330 *ar0330)
 	revision = ar0330_read8(ar0330, AR0330_CHIP_REVISION);
 	if (revision < 0)
 		return revision;
+	dev_info(ar0330->dev, "revision: 0x%x\n", revision);
+
+	otpm_0x30f0 = ar0330_read16(ar0330, 0x30f0);
+	if (otpm_0x30f0 < 0)
+		return otpm_0x30f0;
+	dev_info(ar0330->dev, "otpm_0x30f0: 0x%x\n", otpm_0x30f0);
 
 	data = ar0330_read16(ar0330, AR0330_TEST_DATA_RED);
 	if (data < 0)
 		return data;
+	dev_info(ar0330->dev, "data: 0x%x\n", data);
 
 	if (revision == 0x10)
 		ar0330->version = 1;
