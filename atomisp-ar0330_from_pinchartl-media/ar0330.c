@@ -1005,8 +1005,6 @@ static int ar0330_otpm_patch(struct ar0330 *ar0330)
 
 		if (ret < 0)
 			return ret;
-
-		usleep_range(10000, 15000);
 	}
 
 	ret = ar0330_write16(ar0330, AR0330_SEQ_CTRL_PORT, patch->seq_addr,
