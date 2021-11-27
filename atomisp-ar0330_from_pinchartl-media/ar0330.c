@@ -944,6 +944,13 @@ static const struct ar0330_register ar0330_register_v3[] = {
 	{ 0x3ed6, 0x6666, 1 }
 };
 
+static const struct ar0330_register ar0330_register_v5[] = {
+	{ 0x3ed2, 0x0146, 1 },
+	{ 0x3eda, 0x88bc, 1 },
+	{ 0x3edc, 0xaa63, 1 },
+	{ 0x305e, 0xa0, 0 },
+};
+
 struct ar0330_patch ar0330_patches[] = {
 	[0] = {
 		.reg_data = ar0330_register_v1,
@@ -971,7 +978,8 @@ struct ar0330_patch ar0330_patches[] = {
 		.seq_size = 0,
 	},
 	[4] = {
-		.reg_size = 0,
+		.reg_data = ar0330_register_v5,
+		.reg_size = ARRAY_SIZE(ar0330_register_v5),
 		.seq_size = 0,
 	},
 };
