@@ -970,6 +970,10 @@ struct ar0330_patch ar0330_patches[] = {
 		.reg_size = 0,
 		.seq_size = 0,
 	},
+	[4] = {
+		.reg_size = 0,
+		.seq_size = 0,
+	},
 };
 
 static int ar0330_otpm_patch(struct ar0330 *ar0330)
@@ -1746,6 +1750,8 @@ static int ar0330_identify(struct ar0330 *ar0330)
 		ar0330->version = 3;
 	else if (data == 0x0007)
 		ar0330->version = 4;
+	else if (data == 0x0008)
+		ar0330->version = 5;
 	else
 		ar0330->version = 0;
 
