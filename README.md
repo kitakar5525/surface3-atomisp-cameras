@@ -23,6 +23,34 @@ but if you want to build drivers here:
 make KDIR="/path/to/your/kernel_tree" ATOMISP_INC="drivers/staging/media/atomisp/include"
 ```
 
+#### loading out-of-tree sensor modules
+
+Current atomisp driver requires you to load sensor modules _before_
+atomisp main pci driver.
+
+Here is the example:
+
+```bash
+# unload atomisp pci driver
+sudo rmmod atomisp
+
+# load drivers needed for atomisp first for insmod
+# for sensor drivers
+sudo modprobe media # needed for older LTS
+sudo modprobe videodev
+sudo modprobe v4l2_common # needed for older LTS
+sudo modprobe v4l2_async # if using async_register
+# for atomisp
+sudo modprobe videobuf-core
+sudo modprobe videobuf-vmalloc
+
+# load atomisp drivers
+sudo insmod atomisp-ar0330.ko
+sudo insmod atomisp-ov883x.ko
+# IIRC, modprobe works but try insmod instead if weird
+sudo modprobe atomisp dbg_level=1 #dyndbg
+```
+
 #### atomisp firmware file
 
 You need a firmware file, place it to `/lib/firmware/shisp_2401a0_v21.bin`
