@@ -56,6 +56,8 @@
 #define AR0330_ORIENTATION_H		bit(14)
 #define AR0330_ORIENTATION_V		bit(15)
 
+#define AR0330_TEST_PATTERN_MODE	0x3070
+
 #define REG_NULL			0xFFFF
 #define REG_DELAY			0xFFFE
 
@@ -254,10 +256,10 @@ static const s64 link_freq_menu_items[] = {
 
 static const char * const ar0330_test_pattern_menu[] = {
 	"Disabled",
-	"Vertical Color Bar Type 1",
-	"Vertical Color Bar Type 2",
-	"Vertical Color Bar Type 3",
-	"Vertical Color Bar Type 4"
+	"Solid Color",
+	"Full Color Bar",
+	"Fade-to-gray Color Bar",
+	"Walking 1s",
 };
 
 /* sensor register write */
@@ -468,7 +470,10 @@ static int ar0330_enum_frame_sizes(struct v4l2_subdev *sd,
 
 static int ar0330_enable_test_pattern(struct ar0330 *ar0330, u32 pattern)
 {
-	return 0;
+	static const u16 test_pattern[] = { 0, 1, 2, 3, 256, };
+
+	return ar0330_write(ar0330->client, AR0330_TEST_PATTERN_MODE,
+			    test_pattern[pattern]);
 }
 
 static int __ar0330_start_stream(struct ar0330 *ar0330)
